@@ -6,7 +6,40 @@
         xmlns:local="clr-namespace:MLPproject"
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525">
+
+    <Window.DataContext>
+        <local:MainWindowViewModel />
+    </Window.DataContext>
+    
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
         
+        <Menu>
+            <MenuItem Header="Learning" >
+                <MenuItem Header="New" />
+                <MenuItem Header="Save Results"/>
+                <MenuItem Header="Test"/>
+            </MenuItem>
+        </Menu>
+
+        <StackPanel Grid.Row="1" Margin="16">
+            <Label Content="Number of layers" />
+            <TextBox Text="{Binding NumberOfLayers}" />
+            <Label Content="Neurons per layer" />
+            <TextBox Text="{Binding NeuronsPerLayer}" />
+            <Label Content="Bias" />
+            <TextBox Text="{Binding Bias}" />
+            <Label Content="Number of iterations" />
+            <TextBox Text="{Binding NumberOfIterations}" />
+            <Label Content="Learning coefficient" />
+            <TextBox Text="{Binding LearningCoefficient}" />
+            <Label Content="Moment of inertia" />
+            <TextBox Text="{Binding MomentOfInertia}" />
+            
+        </StackPanel>
     </Grid>
 </Window>
