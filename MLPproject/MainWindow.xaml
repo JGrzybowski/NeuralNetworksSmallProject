@@ -31,7 +31,7 @@
         <StackPanel Grid.Row="1" Margin="16">
             <Label Content="Number of layers" />
             <TextBox Text="{Binding NumberOfLayers}" />
-            <Label Content="Neurons per layer" />
+            <Label Content="Neurons per layer (including bias)" />
             <TextBox Text="{Binding NeuronsPerLayer}" />
             <Label Content="Bias" />
             <TextBox Text="{Binding Bias}" />

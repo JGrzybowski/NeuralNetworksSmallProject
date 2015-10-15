@@ -5,16 +5,13 @@ using Encog.App.Analyst.Wizard;
 using Encog.Engine.Network.Activation;
 using Encog.ML;
 using Encog.ML.Data;
-using Encog.ML.Data.Basic;
-using Encog.ML.Data.Versatile;
-using Encog.ML.Data.Versatile.Columns;
-using Encog.ML.Data.Versatile.Sources;
-using Encog.ML.Factory;
-using Encog.ML.Model;
+
 using Encog.Neural.Networks;
 using Encog.Neural.Networks.Layers;
 using Encog.Neural.Networks.Training.Propagation.Back;
+using Encog.Persist;
 using Encog.Util.CSV;
+using Encog.Util.Logging;
 using Encog.Util.Simple;
 using Prism.Mvvm;
 using System;
@@ -49,7 +46,7 @@ namespace MLPproject
         public int NumberOfIterations { get { return numberOfIterations; } set { SetProperty(ref numberOfIterations, value); } }
         private int numberOfIterations = 1000;
 
-        public IActivationFunction Function { get { return new ActivationBipolarSteepenedSigmoid(); } }
+        public IActivationFunction Function { get { return new ActivationBiPolar(); } }
 
         public double LearningRate { get { return learningRate; } set { SetProperty(ref learningRate, value); } }
         private double learningRate = 0.75;
@@ -76,11 +73,14 @@ namespace MLPproject
             norm.Analyze(DataFile, true, CSVFormat.DecimalPoint, analyst);
             norm.Normalize(new FileInfo("temp.csv"));
 
-            var inputNeurons = fields.Count-2;
+            var inputNeurons = fields.Count-1;
             var outputNeurons = fields.Last().Classes.Count-1;
             var trainingSet = TrainingSetUtil.LoadCSVTOMemory(CSVFormat.DecimalPoint,"temp.csv",true, inputNeurons, outputNeurons);
             
             var network = ConstructNetwork(inputNeurons,outputNeurons);
+            //var s = new FileStream("machine.egb", FileMode.Create);
+            //Encog.Persist.EncogDirectoryPersistence.SaveObject(s, network);
+            //EncogDirectoryPersistence.SaveObject(new FileInfo("machine.eg"), network);
             var trainer = new Backpropagation(network, trainingSet, LearningRate, Momentum);
 
             double[] resultsArray = new double[trainingSet.Count];
@@ -112,18 +112,18 @@ namespace MLPproject
 
         private BasicNetwork ConstructNetwork(int inputNeurons, int outputNeurons)
         {
+            //return EncogUtility.SimpleFeedForward(inputNeurons, inputNeurons, 0, outputNeurons, true);
             var network = new BasicNetwork();
             network.AddLayer(new BasicLayer(null, HasBias, inputNeurons));
             for(int i = 0; i < NumberOfLayers; i++)
             {
-                network.AddLayer(new BasicLayer(Function, HasBias, NeuronsPerLayer));
+                network.AddLayer(new BasicLayer(Function, HasBias, NeuronsPerLayer + (HasBias ? 1:0) ));
             }
             network.AddLayer(new BasicLayer(Function, false, outputNeurons));
             network.Structure.FinalizeStructure();
             network.Reset();
             return network;
         }
-
 
     }
 }

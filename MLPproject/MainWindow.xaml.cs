@@ -34,7 +34,6 @@ namespace MLPproject
             var dialog = new OpenFileDialog();
             dialog.Filter = "Comma separated values files (*.csv)|*.csv";
 
-
             if (dialog.ShowDialog() == true)
                 ViewModel.DataFile = new FileInfo(dialog.FileName);        
         }
