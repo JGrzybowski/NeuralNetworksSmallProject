@@ -10,6 +10,9 @@
     <Window.DataContext>
         <local:MainWindowViewModel />
     </Window.DataContext>
+    <Window.Resources>
+        <local:ANDConverter x:Key="AND" />
+    </Window.Resources>
     
     <Grid>
         <Grid.RowDefinitions>
@@ -25,28 +28,46 @@
                 <MenuItem Header="Save Results"/>
             </MenuItem>
             <MenuItem Header="Load Training File" Click="LoadTrainingSet_Click"/>
-            <MenuItem Header="Start Training" Click="StartTraining_Click"/>
+            <MenuItem Header="Start Training" Click="StartTraining_Click">
+                <MenuItem.IsEnabled>
+                    <MultiBinding Converter="{StaticResource AND}">
+                        <Binding Path="IsDataLoaded"/>
+                        <Binding Path="IsIdle" />
+                    </MultiBinding>
+                </MenuItem.IsEnabled>
+            </MenuItem>
         </Menu>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Row="1" Margin="16">
-            <Label Content="Number of layers" />
-            <TextBox Text="{Binding NumberOfLayers}" />
-            <Label Content="Neurons per layer (including bias)" />
-            <TextBox Text="{Binding NeuronsPerLayer}" />
-            <Label Content="Bias" />
-            <TextBox Text="{Binding Bias}" />
-            <Label Content="Number of iterations" />
-            <TextBox Text="{Binding NumberOfIterations}" />
-            <Label Content="Learning rate" />
-            <TextBox Text="{Binding LearningRate}" />
-            <Label Content="Momentum" />
-            <TextBox Text="{Binding Momentum}" />
-            <syncfusion:SfChart Margin="16">
+            <StackPanel x:Name="ParametersPanel" Margin="16">
+                <Label Content="Number of layers" />
+                <syncfusion:UpDown Value="{Binding NumberOfLayers}" MinValue="0" />
+                <Label Content="Neurons per layer (including bias)" />
+                <syncfusion:UpDown Value="{Binding NeuronsPerLayer}" MinValue="1" />
+                <Label Content="Bias" />
+                <syncfusion:UpDown Value="{Binding Bias}" MinValue="0" MaxValue="1" Step="100"/>
+                <Label Content="Number of iterations" />
+                <syncfusion:UpDown Value="{Binding NumberOfIterations}" MinValue="1"/>
+                <Label Content="Learning rate" />
+                <syncfusion:UpDown Value="{Binding LearningRate}" Step="0.10" MinValue="0.05" />
+                <Label Content="Momentum" />
+                <syncfusion:UpDown Value="{Binding Momentum}" Step="0.05" MinValue="0" />
+            </StackPanel>
+            
+            <syncfusion:SfChart Margin="16" Grid.Row="1" Grid.ColumnSpan="2">
                 <syncfusion:LineSeries x:Name="FastColumnSeries" 
-                                          ItemsSource="{Binding Progress}" 
-                                          XBindingPath="Item1" YBindingPath="Item2" 
-                                          ShowTooltip="True"/>
+                                            ItemsSource="{Binding Progress}" 
+                                            XBindingPath="Item1" YBindingPath="Item2" 
+                                            ShowTooltip="True"/>
             </syncfusion:SfChart>
-        </StackPanel>
+        </Grid>
     </Grid>
 </Window>

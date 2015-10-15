@@ -10,6 +10,7 @@ using Encog.Neural.Networks;
 using Encog.Neural.Networks.Layers;
 using Encog.Neural.Networks.Training.Propagation.Back;
 using Encog.Persist;
+using Encog.Util.Arrayutil;
 using Encog.Util.CSV;
 using Encog.Util.Logging;
 using Encog.Util.Simple;
@@ -27,14 +28,11 @@ namespace MLPproject
     public enum ProblemType { Classifying, Regression };
     public class MainWindowViewModel : BindableBase
     {
-        public FileInfo DataFile { get { return dataFile; } set { SetProperty(ref dataFile, value); } }
-        private FileInfo dataFile;
 
-        public ObservableCollection<Tuple<int,double>> Progress { get { return progress; } set { SetProperty(ref progress, value); } }
-        private ObservableCollection<Tuple<int,double>> progress = new ObservableCollection<Tuple<int, double>>();
-        
+        #region Properties
+            #region Network parameters
         public int NeuronsPerLayer { get { return neuronsPerLayer; } set { SetProperty(ref neuronsPerLayer, value); } }
-        private int neuronsPerLayer = 2;
+        private int neuronsPerLayer = 3;
 
         public int NumberOfLayers  { get { return numberOfLayers; } set { SetProperty(ref numberOfLayers, value); } }
         private int numberOfLayers = 1;
@@ -44,7 +42,12 @@ namespace MLPproject
         private bool HasBias { get { return(Bias != 0); } }
 
         public int NumberOfIterations { get { return numberOfIterations; } set { SetProperty(ref numberOfIterations, value); } }
-        private int numberOfIterations = 1000;
+        private int numberOfIterations = 100;
+
+        public NormalizationAction NormalizationType { get { return normalizationType; } set { SetProperty(ref normalizationType, value); } }
+        private NormalizationAction normalizationType = NormalizationAction.OneOf;
+
+
 
         public IActivationFunction Function { get { return new ActivationBiPolar(); } }
 
@@ -52,14 +55,36 @@ namespace MLPproject
         private double learningRate = 0.75;
 
         public double Momentum { get { return momentum; } set { SetProperty(ref momentum, value); } }
-        private double momentum = 0.5;
+        private double momentum = 0.1;
+        #endregion
+            #region Data Loading 
 
-        public bool IsBusy { get { return isBusy; } set { SetProperty(ref isBusy, value); } }
+        public FileInfo DataFile
+        {
+            get { return dataFile; }
+            set
+            {
+                SetProperty(ref dataFile, value);
+                OnPropertyChanged(nameof(IsDataLoaded));
+            }
+        }
+        private FileInfo dataFile;
+        public bool IsDataLoaded { get { return (DataFile != null && DataFile.Exists); } }
+        #endregion
+        #region Visibility
+
         private bool isBusy = false;
-
+        public bool IsBusy { get { return isBusy; } set { SetProperty(ref isBusy, value); } }
+        public bool IsIdle { get { return !IsBusy; } }
+        #endregion
+        #region Plot data
+        public ObservableCollection<Tuple<int,double>> Progress { get { return progress; } set { SetProperty(ref progress, value); } }
+        private ObservableCollection<Tuple<int,double>> progress = new ObservableCollection<Tuple<int, double>>();
+        
         public double ErrorValue { get { return errorValue; } set { SetProperty(ref errorValue, value); } }
         private double errorValue;
-
+            #endregion
+        #endregion
         public void Train()
         {
             Progress.Clear();
@@ -67,14 +92,15 @@ namespace MLPproject
             var wizard = new AnalystWizard(analyst);
             wizard.Wizard(DataFile, true, AnalystFileFormat.DecpntComma);
             var fields = analyst.Script.Normalize.NormalizedFields;
-            fields[fields.Count - 1].Action = Encog.Util.Arrayutil.NormalizationAction.Equilateral;
+            fields[fields.Count - 1].Action =  this.NormalizationType;
+            
             
             var norm = new AnalystNormalizeCSV();
             norm.Analyze(DataFile, true, CSVFormat.DecimalPoint, analyst);
             norm.Normalize(new FileInfo("temp.csv"));
 
             var inputNeurons = fields.Count-1;
-            var outputNeurons = fields.Last().Classes.Count-1;
+            var outputNeurons = fields.Last().Classes.Count - (this.NormalizationType == NormalizationAction.Equilateral ? 1 : 0);
             var trainingSet = TrainingSetUtil.LoadCSVTOMemory(CSVFormat.DecimalPoint,"temp.csv",true, inputNeurons, outputNeurons);
             
             var network = ConstructNetwork(inputNeurons,outputNeurons);
@@ -85,15 +111,17 @@ namespace MLPproject
 
             double[] resultsArray = new double[trainingSet.Count];
             double[] errorArray = new double[NumberOfIterations];
+            IsBusy = true;
             for (int iteration = 0; iteration < numberOfIterations; iteration++)
             {
                 trainer.Iteration();
                 errorValue = trainer.Error;
                 Progress.Add(new Tuple<int,double>(iteration, trainer.Error));
             }
+            IsBusy = false;
             for(int i =0; i< trainingSet.Count; i++)
             {
-               resultsArray[i] = network.Classify(trainingSet[i].Input);
+               resultsArray[i] = network.Classify(trainingSet[i].Input); 
             }
         }
          
