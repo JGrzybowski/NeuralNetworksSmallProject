@@ -47,9 +47,11 @@ namespace MLPproject
         public NormalizationAction NormalizationType { get { return normalizationType; } set { SetProperty(ref normalizationType, value); } }
         private NormalizationAction normalizationType = NormalizationAction.OneOf;
 
+        public List<IActivationFunction> ActivationFunctions { get { return new List<IActivationFunction> { new ActivationSigmoid(), new ActivationBipolarSteepenedSigmoid() }; } }
+        public IActivationFunction Function { get { return function; } set { SetProperty(ref function, value); } }
+        private IActivationFunction function;
 
 
-        public IActivationFunction Function { get { return new ActivationBiPolar(); } }
 
         public double LearningRate { get { return learningRate; } set { SetProperty(ref learningRate, value); } }
         private double learningRate = 1.75;

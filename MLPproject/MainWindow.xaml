@@ -82,11 +82,8 @@
                     <ComboBoxItem Content="OneOf" />
                     <ComboBoxItem Content="Equilateral" />
                 </ComboBox>
-                <ComboBox SelectedIndex="0">
-                    <ComboBoxItem Content="Tanh"/>
-                    <ComboBoxItem Content="Sigmoid" />
-                    <ComboBoxItem Content="Bipolar" />
-                </ComboBox>
+                <ComboBox ItemsSource="{Binding ActivationFunctions}" SelectedItem="{Binding Function}" />
+                
                 <ComboBox SelectedIndex="0">
                     <ComboBoxItem Content="Classification"/>
                     <ComboBoxItem Content="Regression" />
