@@ -42,7 +42,7 @@ namespace MLPproject
         private bool HasBias { get { return(Bias != 0); } }
 
         public int NumberOfIterations { get { return numberOfIterations; } set { SetProperty(ref numberOfIterations, value); } }
-        private int numberOfIterations = 100;
+        private int numberOfIterations = 300;
 
         public NormalizationAction NormalizationType { get { return normalizationType; } set { SetProperty(ref normalizationType, value); } }
         private NormalizationAction normalizationType = NormalizationAction.OneOf;
@@ -52,7 +52,7 @@ namespace MLPproject
         public IActivationFunction Function { get { return new ActivationBiPolar(); } }
 
         public double LearningRate { get { return learningRate; } set { SetProperty(ref learningRate, value); } }
-        private double learningRate = 0.75;
+        private double learningRate = 1.75;
 
         public double Momentum { get { return momentum; } set { SetProperty(ref momentum, value); } }
         private double momentum = 0.1;
@@ -93,7 +93,6 @@ namespace MLPproject
             wizard.Wizard(DataFile, true, AnalystFileFormat.DecpntComma);
             var fields = analyst.Script.Normalize.NormalizedFields;
             fields[fields.Count - 1].Action =  this.NormalizationType;
-            
             
             var norm = new AnalystNormalizeCSV();
             norm.Analyze(DataFile, true, CSVFormat.DecimalPoint, analyst);

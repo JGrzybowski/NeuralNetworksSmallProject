@@ -37,7 +37,7 @@
                 </MenuItem.IsEnabled>
             </MenuItem>
         </Menu>
-        <Grid>
+        <Grid Grid.Row="1" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" >
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
@@ -47,21 +47,51 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel x:Name="ParametersPanel" Margin="16">
+            <Grid x:Name="ParametersPanel" Margin="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                
                 <Label Content="Number of layers" />
-                <syncfusion:UpDown Value="{Binding NumberOfLayers}" MinValue="0" />
-                <Label Content="Neurons per layer (including bias)" />
-                <syncfusion:UpDown Value="{Binding NeuronsPerLayer}" MinValue="1" />
-                <Label Content="Bias" />
-                <syncfusion:UpDown Value="{Binding Bias}" MinValue="0" MaxValue="1" Step="100"/>
-                <Label Content="Number of iterations" />
-                <syncfusion:UpDown Value="{Binding NumberOfIterations}" MinValue="1"/>
-                <Label Content="Learning rate" />
-                <syncfusion:UpDown Value="{Binding LearningRate}" Step="0.10" MinValue="0.05" />
-                <Label Content="Momentum" />
-                <syncfusion:UpDown Value="{Binding Momentum}" Step="0.05" MinValue="0" />
+                <syncfusion:UpDown Value="{Binding NumberOfLayers}" MinValue="0" Grid.Column="1" />
+                <Label Content="Neurons per layer (including bias)" Grid.Row="1" />
+                <syncfusion:UpDown Value="{Binding NeuronsPerLayer}" MinValue="1" Grid.Column="1" Grid.Row="1" />
+                <Label Content="Bias" Grid.Row="2" />
+                <syncfusion:UpDown Value="{Binding Bias}" MinValue="0" MaxValue="1" Grid.Column="1" Grid.Row="2"/>
+                <Label Content="Number of iterations" Grid.Row="3" />
+                <syncfusion:UpDown Value="{Binding NumberOfIterations}" MinValue="1" Step="100" Grid.Column="1" Grid.Row="3"/>
+                <Label Content="Learning rate" Grid.Row="4" />
+                <syncfusion:UpDown Value="{Binding LearningRate}" Step="0.10" MinValue="0.05" Grid.Column="1" Grid.Row="4"/>
+                <Label Content="Momentum" Grid.Row="5" />
+                <syncfusion:UpDown Value="{Binding Momentum}" Step="0.05" MinValue="0" Grid.Column="1" Grid.Row="5"/>
+            </Grid>
+            <StackPanel Grid.Column="1" Margin="16">
+                <ComboBox SelectedIndex="0">
+                    <ComboBoxItem Content="OneOf" />
+                    <ComboBoxItem Content="Equilateral" />
+                </ComboBox>
+                <ComboBox SelectedIndex="0">
+                    <ComboBoxItem Content="Tanh"/>
+                    <ComboBoxItem Content="Sigmoid" />
+                    <ComboBoxItem Content="Bipolar" />
+                </ComboBox>
+                <ComboBox SelectedIndex="0">
+                    <ComboBoxItem Content="Classification"/>
+                    <ComboBoxItem Content="Regression" />
+                </ComboBox>  
             </StackPanel>
-            
             <syncfusion:SfChart Margin="16" Grid.Row="1" Grid.ColumnSpan="2">
                 <syncfusion:LineSeries x:Name="FastColumnSeries" 
                                             ItemsSource="{Binding Progress}" 
