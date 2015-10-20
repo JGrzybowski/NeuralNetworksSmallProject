@@ -9,6 +9,7 @@ using Encog.ML.Data;
 using Encog.Neural.Networks;
 using Encog.Neural.Networks.Layers;
 using Encog.Neural.Networks.Training.Propagation.Back;
+using Encog.Neural.Networks.Training.Propagation.Resilient;
 using Encog.Persist;
 using Encog.Util.Arrayutil;
 using Encog.Util.CSV;
@@ -28,7 +29,10 @@ namespace MLPproject
     public enum ProblemType { Classifying, Regression };
     public class MainWindowViewModel : BindableBase
     {
-
+        public MainWindowViewModel()
+        {
+            NormalizationTypes = new List<NormalizationAction> { NormalizationAction.Equilateral, NormalizationAction.OneOf };
+        }
         #region Properties
             #region Network parameters
         public int NeuronsPerLayer { get { return neuronsPerLayer; } set { SetProperty(ref neuronsPerLayer, value); } }
@@ -42,22 +46,21 @@ namespace MLPproject
         private bool HasBias { get { return(Bias != 0); } }
 
         public int NumberOfIterations { get { return numberOfIterations; } set { SetProperty(ref numberOfIterations, value); } }
-        private int numberOfIterations = 300;
+        private int numberOfIterations = 100;
 
+        public List<NormalizationAction> NormalizationTypes;
         public NormalizationAction NormalizationType { get { return normalizationType; } set { SetProperty(ref normalizationType, value); } }
         private NormalizationAction normalizationType = NormalizationAction.OneOf;
 
-        public List<IActivationFunction> ActivationFunctions { get { return new List<IActivationFunction> { new ActivationSigmoid(), new ActivationBipolarSteepenedSigmoid() }; } }
+        public List<IActivationFunction> ActivationFunctions { get { return new List<IActivationFunction> { new ActivationBipolarSteepenedSigmoid(), new ActivationRamp() }; } }
         public IActivationFunction Function { get { return function; } set { SetProperty(ref function, value); } }
         private IActivationFunction function;
-
-
-
+        
         public double LearningRate { get { return learningRate; } set { SetProperty(ref learningRate, value); } }
-        private double learningRate = 1.75;
+        private double learningRate = 0.01;
 
         public double Momentum { get { return momentum; } set { SetProperty(ref momentum, value); } }
-        private double momentum = 0.1;
+        private double momentum = 0.00;
         #endregion
             #region Data Loading 
 
@@ -73,13 +76,13 @@ namespace MLPproject
         private FileInfo dataFile;
         public bool IsDataLoaded { get { return (DataFile != null && DataFile.Exists); } }
         #endregion
-        #region Visibility
+            #region Visibility
 
         private bool isBusy = false;
         public bool IsBusy { get { return isBusy; } set { SetProperty(ref isBusy, value); } }
         public bool IsIdle { get { return !IsBusy; } }
         #endregion
-        #region Plot data
+            #region Plot data
         public ObservableCollection<Tuple<int,double>> Progress { get { return progress; } set { SetProperty(ref progress, value); } }
         private ObservableCollection<Tuple<int,double>> progress = new ObservableCollection<Tuple<int, double>>();
         
@@ -98,18 +101,22 @@ namespace MLPproject
             
             var norm = new AnalystNormalizeCSV();
             norm.Analyze(DataFile, true, CSVFormat.DecimalPoint, analyst);
-            norm.Normalize(new FileInfo("temp.csv"));
+            
+
+
+            var normalizedDataFileInfo = new FileInfo("temp/temp.csv");
+            norm.Normalize(normalizedDataFileInfo);
 
             var inputNeurons = fields.Count-1;
             var outputNeurons = fields.Last().Classes.Count - (this.NormalizationType == NormalizationAction.Equilateral ? 1 : 0);
-            var trainingSet = TrainingSetUtil.LoadCSVTOMemory(CSVFormat.DecimalPoint,"temp.csv",true, inputNeurons, outputNeurons);
-            
+            var trainingSet = TrainingSetUtil.LoadCSVTOMemory(CSVFormat.DecimalPoint, "temp/temp.csv", true, inputNeurons, outputNeurons);
+
             var network = ConstructNetwork(inputNeurons,outputNeurons);
             //var s = new FileStream("machine.egb", FileMode.Create);
             //Encog.Persist.EncogDirectoryPersistence.SaveObject(s, network);
             //EncogDirectoryPersistence.SaveObject(new FileInfo("machine.eg"), network);
             var trainer = new Backpropagation(network, trainingSet, LearningRate, Momentum);
-
+            //var trainer = new ResilientPropagation(network, trainingSet);
             double[] resultsArray = new double[trainingSet.Count];
             double[] errorArray = new double[NumberOfIterations];
             IsBusy = true;
@@ -120,7 +127,7 @@ namespace MLPproject
                 Progress.Add(new Tuple<int,double>(iteration, trainer.Error));
             }
             IsBusy = false;
-            for(int i =0; i< trainingSet.Count; i++)
+            for(int i = 0; i < trainingSet.Count; i++)
             {
                resultsArray[i] = network.Classify(trainingSet[i].Input); 
             }

@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MLPproject"
+        xmlns:encog="clr-namespace:Encog.Util.Arrayutil;assembly=encog-core-cs"
         mc:Ignorable="d"
         Title="MainWindow" Height="Auto" Width="Auto">
 
@@ -73,16 +74,14 @@
                 <Label Content="Number of iterations" Grid.Row="3" />
                 <syncfusion:UpDown Value="{Binding NumberOfIterations}" MinValue="1" Step="100" Grid.Column="1" Grid.Row="3"/>
                 <Label Content="Learning rate" Grid.Row="4" />
-                <syncfusion:UpDown Value="{Binding LearningRate}" Step="0.10" MinValue="0.05" Grid.Column="1" Grid.Row="4"/>
+                <syncfusion:UpDown Value="{Binding LearningRate}" Step="0.001"  MinValue="0.005"  Grid.Column="1" Grid.Row="4" NumberDecimalDigits="3"/>
                 <Label Content="Momentum" Grid.Row="5" />
                 <syncfusion:UpDown Value="{Binding Momentum}" Step="0.05" MinValue="0" Grid.Column="1" Grid.Row="5"/>
             </Grid>
             <StackPanel Grid.Column="1" Margin="16">
-                <ComboBox SelectedIndex="0">
-                    <ComboBoxItem Content="OneOf" />
-                    <ComboBoxItem Content="Equilateral" />
-                </ComboBox>
-                <ComboBox ItemsSource="{Binding ActivationFunctions}" SelectedItem="{Binding Function}" />
+                <ComboBox SelectedIndex="1" SelectedItem="{Binding NormalizationType, Mode=TwoWay}" 
+                          ItemsSource="{Binding NormalizationTypes}" />
+                    <ComboBox ItemsSource="{Binding ActivationFunctions}" SelectedItem="{Binding Function}" SelectedIndex="0"/>
                 
                 <ComboBox SelectedIndex="0">
                     <ComboBoxItem Content="Classification"/>

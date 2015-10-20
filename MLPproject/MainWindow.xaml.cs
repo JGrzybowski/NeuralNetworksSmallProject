@@ -42,5 +42,6 @@ namespace MLPproject
         {
             ViewModel.Train();
         }
+
     }
 }
