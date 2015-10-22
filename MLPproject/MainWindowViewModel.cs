@@ -32,6 +32,7 @@ namespace MLPproject
         public MainWindowViewModel()
         {
             NormalizationTypes = new List<NormalizationAction> { NormalizationAction.Equilateral, NormalizationAction.OneOf };
+            NormalizationType = NormalizationAction.Equilateral;
         }
         #region Properties
             #region Network parameters
@@ -97,19 +98,18 @@ namespace MLPproject
             var wizard = new AnalystWizard(analyst);
             wizard.Wizard(DataFile, true, AnalystFileFormat.DecpntComma);
             var fields = analyst.Script.Normalize.NormalizedFields;
-            fields[fields.Count - 1].Action =  this.NormalizationType;
-            
+            fields[fields.Count - 1].Action = this.NormalizationType;
+
             var norm = new AnalystNormalizeCSV();
             norm.Analyze(DataFile, true, CSVFormat.DecimalPoint, analyst);
-            
-
 
             var normalizedDataFileInfo = new FileInfo("temp/temp.csv");
             norm.Normalize(normalizedDataFileInfo);
 
-            var inputNeurons = fields.Count-1;
+            var inputNeurons = fields.Count - 1;
             var outputNeurons = fields.Last().Classes.Count - (this.NormalizationType == NormalizationAction.Equilateral ? 1 : 0);
-            var trainingSet = TrainingSetUtil.LoadCSVTOMemory(CSVFormat.DecimalPoint, "temp/temp.csv", true, inputNeurons, outputNeurons);
+            var trainingSet = CSVHelper.LoadCSVToDataSet(normalizedDataFileInfo, inputNeurons, outputNeurons);
+            normalizedDataFileInfo.Delete();
 
             var network = ConstructNetwork(inputNeurons,outputNeurons);
             //var s = new FileStream("machine.egb", FileMode.Create);
@@ -131,19 +131,6 @@ namespace MLPproject
             {
                resultsArray[i] = network.Classify(trainingSet[i].Input); 
             }
-        }
-         
-        private IMLDataSet LoadCSV(FileInfo fileInfo)
-        {
-            int numberOfColumns = 0;
-            if (fileInfo.Exists)
-            {
-                using (StreamReader sr = new StreamReader(fileInfo.FullName))
-                    numberOfColumns = sr.ReadLine().Split(',').Count();
-            
-                return TrainingSetUtil.LoadCSVTOMemory(CSVFormat.DecimalPoint, "temp.csv", true, numberOfColumns-2, 1);
-            }
-            throw new FileNotFoundException("File not found", fileInfo.FullName);
         }
 
         private BasicNetwork ConstructNetwork(int inputNeurons, int outputNeurons)
