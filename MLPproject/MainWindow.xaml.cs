@@ -31,17 +31,37 @@ namespace MLPproject
 
         private void LoadTrainingSet_Click(object sender, RoutedEventArgs e)
         {
+            var fileInfo = OpenSetFile();
+            if (fileInfo != null)
+                ViewModel.LoadTrainingData(fileInfo);        
+        }
+
+        private FileInfo OpenSetFile()
+        {
             var dialog = new OpenFileDialog();
             dialog.Filter = "Comma separated values files (*.csv)|*.csv";
 
             if (dialog.ShowDialog() == true)
-                ViewModel.DataFile = new FileInfo(dialog.FileName);        
+                return new FileInfo(dialog.FileName);
+            return null;
         }
 
         private void StartTraining_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.Train();
         }
+
+        private void TestClassification_Click(object sender, RoutedEventArgs e)
+        {
+            var fileInfo = OpenSetFile();
+            if (fileInfo != null)
+            {
+                ViewModel.LoadTestingData(fileInfo);
+                ViewModel.TestClassification();
+            }
+
+        }
+
 
     }
 }

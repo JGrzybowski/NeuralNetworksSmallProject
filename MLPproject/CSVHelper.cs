@@ -37,7 +37,8 @@ namespace MLPproject
                     result.Add(input, ideal);
                 }
             }
-            return result;
+            var rand = new Random(DateTime.Now.Millisecond);
+            return new BasicMLDataSet(result.OrderBy(r => rand.Next()).ToList());
         }
 
 

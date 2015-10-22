@@ -29,13 +29,17 @@
                 <MenuItem Header="Save Results"/>
             </MenuItem>
             <MenuItem Header="Load Training File" Click="LoadTrainingSet_Click"/>
-            <MenuItem Header="Start Training" Click="StartTraining_Click">
+            <MenuItem Header="Train" Click="StartTraining_Click">
                 <MenuItem.IsEnabled>
                     <MultiBinding Converter="{StaticResource AND}">
-                        <Binding Path="IsDataLoaded"/>
+                        <Binding Path="IsTrainingDataLoaded"/>
                         <Binding Path="IsIdle" />
                     </MultiBinding>
                 </MenuItem.IsEnabled>
+            </MenuItem>
+            <MenuItem Header="Tesitng">
+                <MenuItem Header="Classification" Click="TestClassification_Click" />
+                <MenuItem Header="Regression"/>
             </MenuItem>
         </Menu>
         <Grid Grid.Row="1" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" >
@@ -81,12 +85,9 @@
             <StackPanel Grid.Column="1" Margin="16">
                 <ComboBox SelectedIndex="1" SelectedItem="{Binding NormalizationType, Mode=TwoWay}" 
                           ItemsSource="{Binding NormalizationTypes}" />
-                    <ComboBox ItemsSource="{Binding ActivationFunctions}" SelectedItem="{Binding Function}" SelectedIndex="0"/>
-                
-                <ComboBox SelectedIndex="0">
-                    <ComboBoxItem Content="Classification"/>
-                    <ComboBoxItem Content="Regression" />
-                </ComboBox>  
+                <ComboBox ItemsSource="{Binding ActivationFunctions}" SelectedItem="{Binding Function}" SelectedIndex="0"/>
+                <TextBlock Text="{Binding TrainingErrorValue}" FontSize="21.333" FontWeight="Bold" />
+                <TextBlock Text="{Binding TestingErrorValue}" FontSize="21.333" FontWeight="Bold"/>
             </StackPanel>
             <syncfusion:SfChart Margin="16" Grid.Row="1" Grid.ColumnSpan="2">
                 <syncfusion:LineSeries x:Name="FastColumnSeries" 
