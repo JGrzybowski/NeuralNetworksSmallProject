@@ -16,7 +16,7 @@ namespace MLPproject
         public static IMLDataSet LoadCSVToDataSet(FileInfo fileInfo, int inputCount, int outputCount, bool headers = true)
         {
             BasicMLDataSet result = new BasicMLDataSet();
-            CultureInfo CSVformat = new CultureInfo("en");  
+            CultureInfo CSVformat = new CultureInfo("en");
 
             using (TextFieldParser parser = new TextFieldParser(fileInfo.FullName))
             {
@@ -24,7 +24,7 @@ namespace MLPproject
                 parser.SetDelimiters(",");
                 if (headers)
                     parser.ReadFields();
-                while (!parser.EndOfData) 
+                while (!parser.EndOfData)
                 {
                     //Processing row
                     string[] fields = parser.ReadFields();
@@ -33,7 +33,7 @@ namespace MLPproject
                         input[i] = double.Parse(fields[i], CSVformat);
                     var ideal = new BasicMLData(outputCount);
                     for (int i = 0; i < outputCount; i++)
-                        ideal[i] = double.Parse(fields[i+inputCount], CSVformat);
+                        ideal[i] = double.Parse(fields[i + inputCount], CSVformat);
                     result.Add(input, ideal);
                 }
             }
@@ -41,6 +41,18 @@ namespace MLPproject
             return new BasicMLDataSet(result.OrderBy(r => rand.Next()).ToList());
         }
 
+
+        public static void SaveToCSV(List<double[]> array, FileInfo fileInfo)
+        {
+            using (var sw = fileInfo.CreateText())
+            {
+                foreach (var row in array)
+                {
+                    sw.WriteLine(String.Join(";",row));
+                }
+                sw.Close();
+            }
+        }
 
 
     }

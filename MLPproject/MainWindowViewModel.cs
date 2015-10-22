@@ -3,6 +3,7 @@ using Encog.App.Analyst;
 using Encog.App.Analyst.CSV.Normalize;
 using Encog.App.Analyst.Wizard;
 using Encog.Engine.Network.Activation;
+using Encog.MathUtil;
 using Encog.ML;
 using Encog.ML.Data;
 
@@ -36,77 +37,77 @@ namespace MLPproject
         }
         #region Properties
             #region Network
-        public int NeuronsPerLayer { get { return neuronsPerLayer; } set { SetProperty(ref neuronsPerLayer, value); } }
-        private int neuronsPerLayer = 3;
+            public int NeuronsPerLayer { get { return neuronsPerLayer; } set { SetProperty(ref neuronsPerLayer, value); } }
+            private int neuronsPerLayer = 3;
 
-        public int NumberOfLayers  { get { return numberOfLayers; } set { SetProperty(ref numberOfLayers, value); } }
-        private int numberOfLayers = 1;
+            public int NumberOfLayers  { get { return numberOfLayers; } set { SetProperty(ref numberOfLayers, value); } }
+            private int numberOfLayers = 1;
 
-        public double Bias { get { return bias; } set { SetProperty(ref bias, value); } }
-        private double bias = 1;
-        private bool HasBias { get { return(Bias != 0); } }
+            public double Bias { get { return bias; } set { SetProperty(ref bias, value); } }
+            private double bias = 1;
+            private bool HasBias { get { return(Bias != 0); } }
 
-        public int NumberOfIterations { get { return numberOfIterations; } set { SetProperty(ref numberOfIterations, value); } }
-        private int numberOfIterations = 100;
+            public int NumberOfIterations { get { return numberOfIterations; } set { SetProperty(ref numberOfIterations, value); } }
+            private int numberOfIterations = 100;
 
-        public List<NormalizationAction> NormalizationTypes;
-        public NormalizationAction NormalizationType { get { return normalizationType; } set { SetProperty(ref normalizationType, value); } }
-        private NormalizationAction normalizationType = NormalizationAction.OneOf;
+            public List<NormalizationAction> NormalizationTypes;
+            public NormalizationAction NormalizationType { get { return normalizationType; } set { SetProperty(ref normalizationType, value); } }
+            private NormalizationAction normalizationType = NormalizationAction.OneOf;
 
-        public List<IActivationFunction> ActivationFunctions { get { return new List<IActivationFunction> { new ActivationTANH(), new ActivationRamp() }; } }
-        public IActivationFunction Function { get { return function; } set { SetProperty(ref function, value); } }
-        private IActivationFunction function;
+            public List<IActivationFunction> ActivationFunctions { get { return new List<IActivationFunction> { new ActivationTANH(), new ActivationRamp() }; } }
+            public IActivationFunction Function { get { return function; } set { SetProperty(ref function, value); } }
+            private IActivationFunction function;
         
-        public double LearningRate { get { return learningRate; } set { SetProperty(ref learningRate, value); } }
-        private double learningRate = 0.01;
+            public double LearningRate { get { return learningRate; } set { SetProperty(ref learningRate, value); } }
+            private double learningRate = 0.01;
 
-        public double Momentum { get { return momentum; } set { SetProperty(ref momentum, value); } }
-        private double momentum = 0.00;
+            public double Momentum { get { return momentum; } set { SetProperty(ref momentum, value); } }
+            private double momentum = 0.00;
 
-        private BasicNetwork _network;
-        #endregion
+            private BasicNetwork _network;
+            #endregion
             #region Data Loading 
 
-        public IMLDataSet TrainingData
-        {
-            get { return trainingData; }
-            set
+            public IMLDataSet TrainingData
             {
-                SetProperty(ref trainingData, value);
-                OnPropertyChanged(nameof(IsTrainingDataLoaded));
+                get { return trainingData; }
+                set
+                {
+                    SetProperty(ref trainingData, value);
+                    OnPropertyChanged(nameof(IsTrainingDataLoaded));
+                }
             }
-        }
-        private IMLDataSet trainingData;
-        public bool IsTrainingDataLoaded { get { return (TrainingData != null); } }
+            private IMLDataSet trainingData;
+            public bool IsTrainingDataLoaded { get { return (TrainingData != null); } }
 
-        public IMLDataSet TestingData
-        {
-            get { return testingData; }
-            set
+            public IMLDataSet TestingData
             {
-                SetProperty(ref testingData, value);
-                OnPropertyChanged(nameof(IsTestingDataLoaded));
+                get { return testingData; }
+                set
+                {
+                    SetProperty(ref testingData, value);
+                    OnPropertyChanged(nameof(IsTestingDataLoaded));
+                }
             }
-        }
-        private IMLDataSet testingData;
-        public bool IsTestingDataLoaded { get { return (TestingData != null); } }
+            private IMLDataSet testingData;
+            public bool IsTestingDataLoaded { get { return (TestingData != null); } }
 
 
-        #endregion
-        #region Visibility
+            #endregion
+            #region Visibility
 
-        private bool isBusy = false;
-        public bool IsBusy { get { return isBusy; } set { SetProperty(ref isBusy, value); } }
-        public bool IsIdle { get { return !IsBusy; } }
-        #endregion
+            private bool isBusy = false;
+            public bool IsBusy { get { return isBusy; } set { SetProperty(ref isBusy, value); } }
+            public bool IsIdle { get { return !IsBusy; } }
+            #endregion
             #region Error data
-        public ObservableCollection<Tuple<int,double>> Progress { get { return progress; } set { SetProperty(ref progress, value); } }
-        private ObservableCollection<Tuple<int,double>> progress = new ObservableCollection<Tuple<int, double>>();
+            public ObservableCollection<Tuple<int,double>> Progress { get { return progress; } set { SetProperty(ref progress, value); } }
+            private ObservableCollection<Tuple<int,double>> progress = new ObservableCollection<Tuple<int, double>>();
 
-        public double TrainingErrorValue { get { return trainingErrorValue; } set { SetProperty(ref trainingErrorValue, value); } }
-        private double trainingErrorValue;
-        public double TestingErrorValue { get { return testingErrorValue; } set { SetProperty(ref testingErrorValue, value); } }
-        private double testingErrorValue;
+            public double TrainingErrorValue { get { return trainingErrorValue; } set { SetProperty(ref trainingErrorValue, value); } }
+            private double trainingErrorValue;
+            public double TestingErrorValue { get { return testingErrorValue; } set { SetProperty(ref testingErrorValue, value); } }
+            private double testingErrorValue;
             #endregion
         #endregion
         public void LoadTrainingData(FileInfo fileInfo)
@@ -175,6 +176,19 @@ namespace MLPproject
         public void TestClassification()
         {
             TestingErrorValue = _network.CalculateError(TestingData);
+            var results = new List<double[]>();
+            //FIX magic number
+            var eq = new Equilateral(3, 1, -1);
+            foreach (var singleResult in TestingData)
+            {
+                var input = new double[TestingData.InputSize+1];
+                for (int i = 0; i < TestingData.InputSize; i++)
+                    input[i] = singleResult.Input[i];
+                input[TestingData.InputSize] = eq.Decode(singleResult.Ideal);
+                results.Add(input);
+            }
+            CSVHelper.SaveToCSV(results, new FileInfo("temp/results.csv"));
+
         }
 
         private BasicNetwork ConstructNetwork(int inputNeurons, int outputNeurons)
