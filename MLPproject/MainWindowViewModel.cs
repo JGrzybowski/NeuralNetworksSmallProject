@@ -117,41 +117,11 @@ namespace MLPproject
         #region Classification
         public void LoadClassificationTrainingData(FileInfo fileInfo)
         {
-            var analyst = new EncogAnalyst();
-            var wizard = new AnalystWizard(analyst);
-            wizard.Wizard(fileInfo, true, AnalystFileFormat.DecpntComma);
-            var fields = analyst.Script.Normalize.NormalizedFields;
-            fields[fields.Count - 1].Action = this.NormalizationType;
-
-            var norm = new AnalystNormalizeCSV();
-            norm.Analyze(fileInfo, true, CSVFormat.DecimalPoint, analyst);
-
-            var normalizedDataFileInfo = new FileInfo("temp/temp.csv");
-            norm.Normalize(normalizedDataFileInfo);
-
-            var inputNeurons = fields.Count - 1;
-            var outputNeurons = fields.Last().Classes.Count - (this.NormalizationType == NormalizationAction.Equilateral ? 1 : 0);
-            TrainingData = CSVHelper.LoadCSVToDataSet(normalizedDataFileInfo, inputNeurons, outputNeurons);
-            normalizedDataFileInfo.Delete();
+            TrainingData = CSVHelper.LoadAndNormalizeData(fileInfo, AnalystGoal.Classification, this.NormalizationType, true);
         }
         public void LoadClassificationTestingData(FileInfo fileInfo)
         {
-            var analyst = new EncogAnalyst();
-            var wizard = new AnalystWizard(analyst);
-            wizard.Wizard(fileInfo, true, AnalystFileFormat.DecpntComma);
-            var fields = analyst.Script.Normalize.NormalizedFields;
-            fields[fields.Count - 1].Action = this.NormalizationType;
-
-            var norm = new AnalystNormalizeCSV();
-            norm.Analyze(fileInfo, true, CSVFormat.DecimalPoint, analyst);
-
-            var normalizedDataFileInfo = new FileInfo("temp/temp.csv");
-            norm.Normalize(normalizedDataFileInfo);
-
-            var inputNeurons = fields.Count - 1;
-            var outputNeurons = fields.Last().Classes.Count - (this.NormalizationType == NormalizationAction.Equilateral ? 1 : 0);
-            TestingData = CSVHelper.LoadCSVToDataSet(normalizedDataFileInfo, inputNeurons, outputNeurons, false);
-            normalizedDataFileInfo.Delete();
+            TestingData = CSVHelper.LoadAndNormalizeData(fileInfo, AnalystGoal.Classification, this.NormalizationType, false);
         }
         public void TestClassification()
         {
@@ -174,43 +144,12 @@ namespace MLPproject
         #region Regresssion
         public void LoadRegressionTrainingData(FileInfo fileInfo)
         {
-            var analyst = new EncogAnalyst();
-            var wizard = new AnalystWizard(analyst);
-            wizard.Goal = AnalystGoal.Regression;
-            wizard.Wizard(fileInfo, true, AnalystFileFormat.DecpntComma);
-            var fields = analyst.Script.Normalize.NormalizedFields;
-
-            var norm = new AnalystNormalizeCSV();
-            norm.Analyze(fileInfo, true, CSVFormat.DecimalPoint, analyst);
-
-            var normalizedDataFileInfo = new FileInfo("temp/temp.csv");
-            norm.Normalize(normalizedDataFileInfo);
-
-            var inputNeurons = fields.Count - 1;
-            var outputNeurons = 1;
-            TrainingData = CSVHelper.LoadCSVToDataSet(normalizedDataFileInfo, inputNeurons, outputNeurons);
-            normalizedDataFileInfo.Delete();
+            TrainingData = CSVHelper.LoadAndNormalizeData(fileInfo, AnalystGoal.Regression, this.NormalizationType, true);
         }
         public void LoadRegressionTestingData(FileInfo fileInfo)
         {
-            var analyst = new EncogAnalyst();
-            var wizard = new AnalystWizard(analyst);
-            wizard.Goal = AnalystGoal.Regression;
-            wizard.Wizard(fileInfo, true, AnalystFileFormat.DecpntComma);
-            var fields = analyst.Script.Normalize.NormalizedFields;
-            
-            var norm = new AnalystNormalizeCSV();
-            norm.Analyze(fileInfo, true, CSVFormat.DecimalPoint, analyst);
-
-            var normalizedDataFileInfo = new FileInfo("temp/temp.csv");
-            norm.Normalize(normalizedDataFileInfo);
-
-            var inputNeurons = fields.Count - 1;
-            var outputNeurons = 1;
-            TestingData = CSVHelper.LoadCSVToDataSet(normalizedDataFileInfo, inputNeurons, outputNeurons, false);
-            normalizedDataFileInfo.Delete();
+            TestingData = CSVHelper.LoadAndNormalizeData(fileInfo, AnalystGoal.Regression, this.NormalizationType, false);
         }
-
         public void TestRegression()
         {
             var results = new List<double[]>();
@@ -229,6 +168,7 @@ namespace MLPproject
         }
 
         #endregion
+        
 
         public void Train()
         {

@@ -12,9 +12,10 @@
         <local:MainWindowViewModel />
     </Window.DataContext>
     <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <local:ANDConverter x:Key="AND" />
     </Window.Resources>
-    
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -48,6 +49,7 @@
         <Grid Grid.Row="1" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" >
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
@@ -84,17 +86,35 @@
                 <syncfusion:UpDown Value="{Binding LearningRate}" Step="0.001"  MinValue="0.005"  Grid.Column="1" Grid.Row="4" NumberDecimalDigits="3"/>
                 <Label Content="Momentum" Grid.Row="5" />
                 <syncfusion:UpDown Value="{Binding Momentum}" Step="0.05" MinValue="0" Grid.Column="1" Grid.Row="5"/>
+                
+                <Label x:Name="TrainNameBlock"  Grid.Row="6" Content="Training Set" />
+                <Button Grid.Row="6" Grid.Column="1" Content="Training Set" />
+                <Label x:Name="TestNameBlock"  Grid.Row="7" Content="Test Set" />
+                <Button Grid.Row="7" Grid.Column="1" Content="Training Set" />
+                <Label x:Name="OutputNameBlock"  Grid.Row="8" Content="Test Set" />
+                <Button Grid.Row="8" Grid.Column="1" Content="Training Set" />
+                
             </Grid>
             <StackPanel Grid.Column="1" Margin="16">
                 <TextBlock Text="Task Type:" Margin="0,4"/>
                 <StackPanel Orientation="Horizontal">
-                    <RadioButton Content="Classification" Margin="16,0"/>
-                    <RadioButton Content="Regression" Margin="16,0"/>
+                    <RadioButton Content="Classification" GroupName="TaskType" Margin="16,0" x:Name="ClassificationRadio" IsChecked="true"/>
+                    <RadioButton Content="Regression" GroupName="TaskType" Margin="16,0" x:Name="RegressionRadio"/>
                 </StackPanel>
+                
+                <TextBlock Text="Normalization Type:" Margin="0,4" 
+                           Visibility="{Binding IsChecked,Converter={StaticResource BooleanToVisibilityConverter}, ElementName=ClassificationRadio, Mode=TwoWay}" />
                 <ComboBox SelectedIndex="1" SelectedItem="{Binding NormalizationType, Mode=TwoWay}" 
-                          ItemsSource="{Binding NormalizationTypes}" />
+                          ItemsSource="{Binding NormalizationTypes}" 
+                          Visibility="{Binding IsChecked,Converter={StaticResource BooleanToVisibilityConverter}, ElementName=ClassificationRadio, Mode=TwoWay}" />
+
+                <TextBlock Text="Activation Function:" Margin="0,8,0,4"/>
                 <ComboBox ItemsSource="{Binding ActivationFunctions}" SelectedItem="{Binding Function}" SelectedIndex="0"/>
+                
+                <TextBlock Text="Training Error:" Margin="0,4"/>
                 <TextBlock Text="{Binding TrainingErrorValue}" FontSize="21.333" FontWeight="Bold" />
+
+                <TextBlock Text="Testing Error:" Margin="0,4"/>
                 <TextBlock Text="{Binding TestingErrorValue}" FontSize="21.333" FontWeight="Bold"/>
             </StackPanel>
             <syncfusion:SfChart Margin="16" Grid.Row="1" Grid.ColumnSpan="2">
@@ -103,6 +123,14 @@
                                             XBindingPath="Item1" YBindingPath="Item2" 
                                             ShowTooltip="True"/>
             </syncfusion:SfChart>
+            <syncfusion:SfChart Margin="16" Grid.Row="2" Grid.ColumnSpan="2"
+                                Visibility="{Binding IsChecked,Converter={StaticResource BooleanToVisibilityConverter}, ElementName=RegressionRadio, Mode=TwoWay}" >
+                <syncfusion:LineSeries 
+                                            ItemsSource="{Binding Progress}" 
+                                            XBindingPath="Item1" YBindingPath="Item2" 
+                                            ShowTooltip="True"/>
+            </syncfusion:SfChart>
+            
         </Grid>
     </Grid>
 </Window>
