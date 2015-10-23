@@ -13,7 +13,7 @@ namespace MLPproject
 {
     public static class CSVHelper
     {
-        public static IMLDataSet LoadCSVToDataSet(FileInfo fileInfo, int inputCount, int outputCount, bool headers = true)
+        public static IMLDataSet LoadCSVToDataSet(FileInfo fileInfo, int inputCount, int outputCount, bool randomize = true, bool headers = true)
         {
             BasicMLDataSet result = new BasicMLDataSet();
             CultureInfo CSVformat = new CultureInfo("en");
@@ -38,7 +38,8 @@ namespace MLPproject
                 }
             }
             var rand = new Random(DateTime.Now.Millisecond);
-            return new BasicMLDataSet(result.OrderBy(r => rand.Next()).ToList());
+
+            return (randomize ? new BasicMLDataSet(result.OrderBy(r => rand.Next()).ToList()) : new BasicMLDataSet(result));
         }
 
 

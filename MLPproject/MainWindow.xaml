@@ -28,18 +28,21 @@
                 <MenuItem Header="Test"/>
                 <MenuItem Header="Save Results"/>
             </MenuItem>
-            <MenuItem Header="Load Training File" Click="LoadTrainingSet_Click"/>
-            <MenuItem Header="Train" Click="StartTraining_Click">
-                <MenuItem.IsEnabled>
-                    <MultiBinding Converter="{StaticResource AND}">
-                        <Binding Path="IsTrainingDataLoaded"/>
-                        <Binding Path="IsIdle" />
-                    </MultiBinding>
-                </MenuItem.IsEnabled>
+            <MenuItem Header="Classification">
+                <MenuItem Header="Load Training Data" Click="LoadTrainingSet_Click" />
+                <MenuItem Header="Train" Click="StartTraining_Click">
+                    <MenuItem.IsEnabled>
+                        <MultiBinding Converter="{StaticResource AND}">
+                            <Binding Path="IsTrainingDataLoaded"/>
+                            <Binding Path="IsIdle" />
+                        </MultiBinding>
+                    </MenuItem.IsEnabled>
+                </MenuItem>
+                <MenuItem Header="Test" Click="TestClassification_Click" />
             </MenuItem>
-            <MenuItem Header="Tesitng">
-                <MenuItem Header="Classification" Click="TestClassification_Click" />
-                <MenuItem Header="Regression"/>
+            <MenuItem Header="Regression">
+                <MenuItem Header="Load Training Data" Click="Load_Train_Regression_Click" />
+                <MenuItem Header="Test" Click="TestRegression_Click"/>
             </MenuItem>
         </Menu>
         <Grid Grid.Row="1" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" >
@@ -83,6 +86,11 @@
                 <syncfusion:UpDown Value="{Binding Momentum}" Step="0.05" MinValue="0" Grid.Column="1" Grid.Row="5"/>
             </Grid>
             <StackPanel Grid.Column="1" Margin="16">
+                <TextBlock Text="Task Type:" Margin="0,4"/>
+                <StackPanel Orientation="Horizontal">
+                    <RadioButton Content="Classification" Margin="16,0"/>
+                    <RadioButton Content="Regression" Margin="16,0"/>
+                </StackPanel>
                 <ComboBox SelectedIndex="1" SelectedItem="{Binding NormalizationType, Mode=TwoWay}" 
                           ItemsSource="{Binding NormalizationTypes}" />
                 <ComboBox ItemsSource="{Binding ActivationFunctions}" SelectedItem="{Binding Function}" SelectedIndex="0"/>

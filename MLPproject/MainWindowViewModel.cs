@@ -99,6 +99,9 @@ namespace MLPproject
             private bool isBusy = false;
             public bool IsBusy { get { return isBusy; } set { SetProperty(ref isBusy, value); } }
             public bool IsIdle { get { return !IsBusy; } }
+
+
+            
             #endregion
             #region Error data
             public ObservableCollection<Tuple<int,double>> Progress { get { return progress; } set { SetProperty(ref progress, value); } }
@@ -108,9 +111,11 @@ namespace MLPproject
             private double trainingErrorValue;
             public double TestingErrorValue { get { return testingErrorValue; } set { SetProperty(ref testingErrorValue, value); } }
             private double testingErrorValue;
-            #endregion
         #endregion
-        public void LoadTrainingData(FileInfo fileInfo)
+        #endregion
+
+        #region Classification
+        public void LoadClassificationTrainingData(FileInfo fileInfo)
         {
             var analyst = new EncogAnalyst();
             var wizard = new AnalystWizard(analyst);
@@ -129,8 +134,7 @@ namespace MLPproject
             TrainingData = CSVHelper.LoadCSVToDataSet(normalizedDataFileInfo, inputNeurons, outputNeurons);
             normalizedDataFileInfo.Delete();
         }
-
-        public void LoadTestingData(FileInfo fileInfo)
+        public void LoadClassificationTestingData(FileInfo fileInfo)
         {
             var analyst = new EncogAnalyst();
             var wizard = new AnalystWizard(analyst);
@@ -146,33 +150,9 @@ namespace MLPproject
 
             var inputNeurons = fields.Count - 1;
             var outputNeurons = fields.Last().Classes.Count - (this.NormalizationType == NormalizationAction.Equilateral ? 1 : 0);
-            TestingData = CSVHelper.LoadCSVToDataSet(normalizedDataFileInfo, inputNeurons, outputNeurons);
+            TestingData = CSVHelper.LoadCSVToDataSet(normalizedDataFileInfo, inputNeurons, outputNeurons, false);
             normalizedDataFileInfo.Delete();
         }
-
-        public void Train()
-        {
-            Progress.Clear();
-            _network = ConstructNetwork(TrainingData.InputSize,TrainingData.IdealSize);
-
-            var trainer = new Backpropagation(_network, TrainingData, LearningRate, Momentum);
-            //var trainer = new ResilientPropagation(_network, TrainingData);
-            double[] resultsArray = new double[TrainingData.Count];
-            double[] errorArray = new double[NumberOfIterations];
-            IsBusy = true;
-            for (int iteration = 0; iteration < numberOfIterations; iteration++)
-            {
-                trainer.Iteration();
-                Progress.Add(new Tuple<int,double>(iteration, trainer.Error));
-            }
-            IsBusy = false;
-            for(int i = 0; i < TrainingData.Count; i++)
-            {
-               resultsArray[i] = _network.Classify(TrainingData[i].Input); 
-            }
-            TrainingErrorValue = _network.CalculateError(TrainingData);
-        }
-
         public void TestClassification()
         {
             TestingErrorValue = _network.CalculateError(TestingData);
@@ -188,9 +168,90 @@ namespace MLPproject
                 results.Add(input);
             }
             CSVHelper.SaveToCSV(results, new FileInfo("temp/results.csv"));
-
         }
 
+        #endregion
+        #region Regresssion
+        public void LoadRegressionTrainingData(FileInfo fileInfo)
+        {
+            var analyst = new EncogAnalyst();
+            var wizard = new AnalystWizard(analyst);
+            wizard.Goal = AnalystGoal.Regression;
+            wizard.Wizard(fileInfo, true, AnalystFileFormat.DecpntComma);
+            var fields = analyst.Script.Normalize.NormalizedFields;
+
+            var norm = new AnalystNormalizeCSV();
+            norm.Analyze(fileInfo, true, CSVFormat.DecimalPoint, analyst);
+
+            var normalizedDataFileInfo = new FileInfo("temp/temp.csv");
+            norm.Normalize(normalizedDataFileInfo);
+
+            var inputNeurons = fields.Count - 1;
+            var outputNeurons = 1;
+            TrainingData = CSVHelper.LoadCSVToDataSet(normalizedDataFileInfo, inputNeurons, outputNeurons);
+            normalizedDataFileInfo.Delete();
+        }
+        public void LoadRegressionTestingData(FileInfo fileInfo)
+        {
+            var analyst = new EncogAnalyst();
+            var wizard = new AnalystWizard(analyst);
+            wizard.Goal = AnalystGoal.Regression;
+            wizard.Wizard(fileInfo, true, AnalystFileFormat.DecpntComma);
+            var fields = analyst.Script.Normalize.NormalizedFields;
+            
+            var norm = new AnalystNormalizeCSV();
+            norm.Analyze(fileInfo, true, CSVFormat.DecimalPoint, analyst);
+
+            var normalizedDataFileInfo = new FileInfo("temp/temp.csv");
+            norm.Normalize(normalizedDataFileInfo);
+
+            var inputNeurons = fields.Count - 1;
+            var outputNeurons = 1;
+            TestingData = CSVHelper.LoadCSVToDataSet(normalizedDataFileInfo, inputNeurons, outputNeurons, false);
+            normalizedDataFileInfo.Delete();
+        }
+
+        public void TestRegression()
+        {
+            var results = new List<double[]>();
+            foreach (var singleResult in TestingData)
+            {
+                var input = new double[TestingData.InputSize + 2];
+                for (int i = 0; i < TestingData.InputSize; i++)
+                    input[i] = singleResult.Input[i];
+                //FIX MagicNumber 0
+                input[TestingData.InputSize] = singleResult.Ideal[0];
+                input[TestingData.InputSize + 1] = _network.Compute(singleResult.Input)[0];
+                results.Add(input);
+            }
+            TestingErrorValue = _network.CalculateError(TestingData);
+            CSVHelper.SaveToCSV(results, new FileInfo("temp/regressionResults.csv"));
+        }
+
+        #endregion
+
+        public void Train()
+        {
+            Progress.Clear();
+            _network = ConstructNetwork(TrainingData.InputSize,TrainingData.IdealSize);
+
+            //var trainer = new Backpropagation(_network, TrainingData, LearningRate, Momentum);
+            var trainer = new ResilientPropagation(_network, TrainingData);
+            double[] resultsArray = new double[TrainingData.Count];
+            double[] errorArray = new double[NumberOfIterations];
+            IsBusy = true;
+            for (int iteration = 0; iteration < numberOfIterations; iteration++)
+            {
+                trainer.Iteration();
+                Progress.Add(new Tuple<int,double>(iteration, trainer.Error));
+            }
+            IsBusy = false;
+            for(int i = 0; i < TrainingData.Count; i++)
+            {
+               resultsArray[i] = _network.Classify(TrainingData[i].Input); 
+            }
+            TrainingErrorValue = _network.CalculateError(TrainingData);
+        }
         private BasicNetwork ConstructNetwork(int inputNeurons, int outputNeurons)
         {
             //return EncogUtility.SimpleFeedForward(inputNeurons, inputNeurons, 0, outputNeurons, true);

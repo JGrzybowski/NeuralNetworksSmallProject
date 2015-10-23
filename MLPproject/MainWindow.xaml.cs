@@ -33,7 +33,7 @@ namespace MLPproject
         {
             var fileInfo = OpenSetFile();
             if (fileInfo != null)
-                ViewModel.LoadTrainingData(fileInfo);        
+                ViewModel.LoadClassificationTrainingData(fileInfo);        
         }
 
         private FileInfo OpenSetFile()
@@ -56,12 +56,29 @@ namespace MLPproject
             var fileInfo = OpenSetFile();
             if (fileInfo != null)
             {
-                ViewModel.LoadTestingData(fileInfo);
+                ViewModel.LoadClassificationTestingData(fileInfo);
                 ViewModel.TestClassification();
             }
 
         }
 
+        private void Load_Train_Regression_Click(object sender, RoutedEventArgs e)
+        {
+            var fileInfo = OpenSetFile();
+            if (fileInfo != null)
+            {
+                ViewModel.LoadRegressionTrainingData(fileInfo);
+            }
+        }
 
+        private void TestRegression_Click(object sender, RoutedEventArgs e)
+        {
+            var fileInfo = OpenSetFile();
+            if (fileInfo != null)
+            {
+                ViewModel.LoadRegressionTestingData(fileInfo);
+                ViewModel.TestRegression();
+            }
+        }
     }
 }
