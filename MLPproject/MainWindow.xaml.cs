@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using Encog.App.Analyst;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -28,14 +29,6 @@ namespace MLPproject
         {
             InitializeComponent();
         }
-
-        private void LoadTrainingSet_Click(object sender, RoutedEventArgs e)
-        {
-            var fileInfo = OpenSetFile();
-            if (fileInfo != null)
-                ViewModel.LoadClassificationTrainingData(fileInfo);        
-        }
-
         private FileInfo OpenSetFile()
         {
             var dialog = new OpenFileDialog();
@@ -46,39 +39,40 @@ namespace MLPproject
             return null;
         }
 
+        private void Load_Train_Click(object sender, RoutedEventArgs e)
+        {
+            var fileInfo = OpenSetFile();
+            if (fileInfo != null)
+            {
+                ViewModel.LoadTrainingSet(fileInfo);
+            }
+        }
+        private void Load_Test_Click(object sender, RoutedEventArgs e)
+        {
+            var fileInfo = OpenSetFile();
+            if (fileInfo != null)
+            {
+                ViewModel.LoadTestingSet(fileInfo);
+            }
+        }
+
         private void StartTraining_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.Train();
         }
-
-        private void TestClassification_Click(object sender, RoutedEventArgs e)
+        private void StartTesting_Click(object sender, RoutedEventArgs e)
         {
-            var fileInfo = OpenSetFile();
-            if (fileInfo != null)
-            {
-                ViewModel.LoadClassificationTestingData(fileInfo);
-                ViewModel.TestClassification();
-            }
-
+            ViewModel.Test();
         }
 
-        private void Load_Train_Regression_Click(object sender, RoutedEventArgs e)
+        private void ClassificationRadio_Checked(object sender, RoutedEventArgs e)
         {
-            var fileInfo = OpenSetFile();
-            if (fileInfo != null)
-            {
-                ViewModel.LoadRegressionTrainingData(fileInfo);
-            }
+            ViewModel.ProblemType = AnalystGoal.Classification;
+        }
+        private void RegressionRadio_Checked(object sender, RoutedEventArgs e)
+        {
+            ViewModel.ProblemType = AnalystGoal.Regression;
         }
 
-        private void TestRegression_Click(object sender, RoutedEventArgs e)
-        {
-            var fileInfo = OpenSetFile();
-            if (fileInfo != null)
-            {
-                ViewModel.LoadRegressionTestingData(fileInfo);
-                ViewModel.TestRegression();
-            }
-        }
     }
 }

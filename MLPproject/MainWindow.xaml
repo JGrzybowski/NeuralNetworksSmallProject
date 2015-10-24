@@ -24,27 +24,11 @@
         </Grid.RowDefinitions>
         
         <Menu>
-            <MenuItem Header="Learning" >
-                <MenuItem Header="New" />
-                <MenuItem Header="Test"/>
-                <MenuItem Header="Save Results"/>
-            </MenuItem>
-            <MenuItem Header="Classification">
-                <MenuItem Header="Load Training Data" Click="LoadTrainingSet_Click" />
-                <MenuItem Header="Train" Click="StartTraining_Click">
-                    <MenuItem.IsEnabled>
-                        <MultiBinding Converter="{StaticResource AND}">
-                            <Binding Path="IsTrainingDataLoaded"/>
-                            <Binding Path="IsIdle" />
-                        </MultiBinding>
-                    </MenuItem.IsEnabled>
-                </MenuItem>
-                <MenuItem Header="Test" Click="TestClassification_Click" />
-            </MenuItem>
-            <MenuItem Header="Regression">
-                <MenuItem Header="Load Training Data" Click="Load_Train_Regression_Click" />
-                <MenuItem Header="Test" Click="TestRegression_Click"/>
-            </MenuItem>
+            <MenuItem Header="New" />
+            <MenuItem Header="Load Training Set" Click="Load_Train_Click" />
+            <MenuItem Header="Train" Click="StartTraining_Click" />
+            <MenuItem Header="Load Testing Set" Click="Load_Test_Click"/>
+            <MenuItem Header="Test" Click="StartTesting_Click"/>
         </Menu>
         <Grid Grid.Row="1" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" >
             <Grid.RowDefinitions>
@@ -87,19 +71,19 @@
                 <Label Content="Momentum" Grid.Row="5" />
                 <syncfusion:UpDown Value="{Binding Momentum}" Step="0.05" MinValue="0" Grid.Column="1" Grid.Row="5"/>
                 
-                <Label x:Name="TrainNameBlock"  Grid.Row="6" Content="Training Set" />
-                <Button Grid.Row="6" Grid.Column="1" Content="Training Set" />
-                <Label x:Name="TestNameBlock"  Grid.Row="7" Content="Test Set" />
-                <Button Grid.Row="7" Grid.Column="1" Content="Training Set" />
+                <Label x:Name="TrainNameBlock"  Grid.Row="6" Content="{Binding TrainingDataFileName}" />
+                <!--<Button Grid.Row="6" Grid.Column="1" Content="Training Set" />-->
+                <Label x:Name="TestNameBlock"  Grid.Row="7" Content="{Binding TestingDataFileName}" />
+                <!--<Button Grid.Row="7" Grid.Column="1" Content="Training Set" />-->
                 <Label x:Name="OutputNameBlock"  Grid.Row="8" Content="Test Set" />
-                <Button Grid.Row="8" Grid.Column="1" Content="Training Set" />
+                <!--<Button Grid.Row="8" Grid.Column="1" Content="Training Set" />-->
                 
             </Grid>
             <StackPanel Grid.Column="1" Margin="16">
                 <TextBlock Text="Task Type:" Margin="0,4"/>
                 <StackPanel Orientation="Horizontal">
-                    <RadioButton Content="Classification" GroupName="TaskType" Margin="16,0" x:Name="ClassificationRadio" IsChecked="true"/>
-                    <RadioButton Content="Regression" GroupName="TaskType" Margin="16,0" x:Name="RegressionRadio"/>
+                    <RadioButton Content="Classification" GroupName="TaskType" Margin="16,0" x:Name="ClassificationRadio" Checked="ClassificationRadio_Checked"/>
+                    <RadioButton Content="Regression" GroupName="TaskType" Margin="16,0" x:Name="RegressionRadio" Checked="RegressionRadio_Checked"/>
                 </StackPanel>
                 
                 <TextBlock Text="Normalization Type:" Margin="0,4" 

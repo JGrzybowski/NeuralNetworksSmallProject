@@ -27,7 +27,7 @@ using System.Threading.Tasks;
 
 namespace MLPproject
 {
-    public enum ProblemType { Classifying, Regression };
+    public enum Stage { Start = 0, ProblemTypeSelected = 1, TrainingSetLoaded = 2, NetworkParamsSet = 3, TestingSetLoaded = 4 }
     public class MainWindowViewModel : BindableBase
     {
         public MainWindowViewModel()
@@ -36,8 +36,17 @@ namespace MLPproject
             NormalizationType = NormalizationAction.Equilateral;
         }
         #region Properties
-            #region Network
-            public int NeuronsPerLayer { get { return neuronsPerLayer; } set { SetProperty(ref neuronsPerLayer, value); } }
+        public AnalystGoal ProblemType
+        {
+            get { return problemType; }
+            set { SetProperty(ref problemType, value); Stage = Stage.ProblemTypeSelected; }
+        }
+        private AnalystGoal problemType;
+        public Stage Stage { get { return stage; } set { SetProperty(ref stage, value); } }
+        private Stage stage = Stage.Start;
+
+        #region Network
+        public int NeuronsPerLayer { get { return neuronsPerLayer; } set { SetProperty(ref neuronsPerLayer, value); } }
             private int neuronsPerLayer = 3;
 
             public int NumberOfLayers  { get { return numberOfLayers; } set { SetProperty(ref numberOfLayers, value); } }
@@ -68,7 +77,7 @@ namespace MLPproject
             #endregion
             #region Data Loading 
 
-            public IMLDataSet TrainingData
+            public IMLDataSet TrainingSet
             {
                 get { return trainingData; }
                 set
@@ -78,9 +87,9 @@ namespace MLPproject
                 }
             }
             private IMLDataSet trainingData;
-            public bool IsTrainingDataLoaded { get { return (TrainingData != null); } }
+            public bool IsTrainingDataLoaded { get { return (TrainingSet != null); } }
 
-            public IMLDataSet TestingData
+            public IMLDataSet TestingSet
             {
                 get { return testingData; }
                 set
@@ -90,9 +99,8 @@ namespace MLPproject
                 }
             }
             private IMLDataSet testingData;
-            public bool IsTestingDataLoaded { get { return (TestingData != null); } }
-
-
+            public bool IsTestingDataLoaded { get { return (TestingSet != null); } }
+        
             #endregion
             #region Visibility
 
@@ -100,11 +108,13 @@ namespace MLPproject
             public bool IsBusy { get { return isBusy; } set { SetProperty(ref isBusy, value); } }
             public bool IsIdle { get { return !IsBusy; } }
 
-
-            
+            public string TestingSetFileName { get { return testingDataFileName; } set { SetProperty(ref testingDataFileName, value); } }
+            private string testingDataFileName;
+            public string TrainingSetFileName { get { return trainingDataFileName; } set { SetProperty(ref trainingDataFileName, value); } }
+            private string trainingDataFileName;
             #endregion
-            #region Error data
-            public ObservableCollection<Tuple<int,double>> Progress { get { return progress; } set { SetProperty(ref progress, value); } }
+        #region Error data
+        public ObservableCollection<Tuple<int,double>> Progress { get { return progress; } set { SetProperty(ref progress, value); } }
             private ObservableCollection<Tuple<int,double>> progress = new ObservableCollection<Tuple<int, double>>();
 
             public double TrainingErrorValue { get { return trainingErrorValue; } set { SetProperty(ref trainingErrorValue, value); } }
@@ -115,69 +125,61 @@ namespace MLPproject
         #endregion
 
         #region Classification
-        public void LoadClassificationTrainingData(FileInfo fileInfo)
-        {
-            TrainingData = CSVHelper.LoadAndNormalizeData(fileInfo, AnalystGoal.Classification, this.NormalizationType, true);
-        }
-        public void LoadClassificationTestingData(FileInfo fileInfo)
-        {
-            TestingData = CSVHelper.LoadAndNormalizeData(fileInfo, AnalystGoal.Classification, this.NormalizationType, false);
-        }
         public void TestClassification()
         {
-            TestingErrorValue = _network.CalculateError(TestingData);
+            TestingErrorValue = _network.CalculateError(TestingSet);
             var results = new List<double[]>();
             //FIX magic number
             var eq = new Equilateral(3, 1, -1);
-            foreach (var singleResult in TestingData)
+            foreach (var singleResult in TestingSet)
             {
-                var input = new double[TestingData.InputSize+1];
-                for (int i = 0; i < TestingData.InputSize; i++)
+                var input = new double[TestingSet.InputSize+1];
+                for (int i = 0; i < TestingSet.InputSize; i++)
                     input[i] = singleResult.Input[i];
-                input[TestingData.InputSize] = eq.Decode(singleResult.Ideal);
+                input[TestingSet.InputSize] = eq.Decode(singleResult.Ideal);
                 results.Add(input);
             }
             CSVHelper.SaveToCSV(results, new FileInfo("temp/results.csv"));
         }
-
         #endregion
         #region Regresssion
-        public void LoadRegressionTrainingData(FileInfo fileInfo)
-        {
-            TrainingData = CSVHelper.LoadAndNormalizeData(fileInfo, AnalystGoal.Regression, this.NormalizationType, true);
-        }
-        public void LoadRegressionTestingData(FileInfo fileInfo)
-        {
-            TestingData = CSVHelper.LoadAndNormalizeData(fileInfo, AnalystGoal.Regression, this.NormalizationType, false);
-        }
         public void TestRegression()
         {
+            TestingErrorValue = _network.CalculateError(TestingSet);
             var results = new List<double[]>();
-            foreach (var singleResult in TestingData)
+            foreach (var singleResult in TestingSet)
             {
-                var input = new double[TestingData.InputSize + 2];
-                for (int i = 0; i < TestingData.InputSize; i++)
+                var input = new double[TestingSet.InputSize + 2];
+                for (int i = 0; i < TestingSet.InputSize; i++)
                     input[i] = singleResult.Input[i];
                 //FIX MagicNumber 0
-                input[TestingData.InputSize] = singleResult.Ideal[0];
-                input[TestingData.InputSize + 1] = _network.Compute(singleResult.Input)[0];
+                input[TestingSet.InputSize] = singleResult.Ideal[0];
+                input[TestingSet.InputSize + 1] = _network.Compute(singleResult.Input)[0];
                 results.Add(input);
             }
-            TestingErrorValue = _network.CalculateError(TestingData);
+            TestingErrorValue = _network.CalculateError(TestingSet);
             CSVHelper.SaveToCSV(results, new FileInfo("temp/regressionResults.csv"));
         }
-
         #endregion
-        
 
+        public void LoadTrainingSet(FileInfo fileInfo)
+        {
+            TrainingSet = CSVHelper.LoadAndNormalizeData(fileInfo, ProblemType, this.NormalizationType, true);
+            TrainingSetFileName = fileInfo.Name;
+        }
+        public void LoadTestingSet(FileInfo fileInfo)
+        {
+            TestingSet = CSVHelper.LoadAndNormalizeData(fileInfo, ProblemType, this.NormalizationType, false);
+            TestingSetFileName = fileInfo.Name;
+        }
         public void Train()
         {
             Progress.Clear();
-            _network = ConstructNetwork(TrainingData.InputSize,TrainingData.IdealSize);
+            _network = ConstructNetwork(TrainingSet.InputSize,TrainingSet.IdealSize);
 
             //var trainer = new Backpropagation(_network, TrainingData, LearningRate, Momentum);
-            var trainer = new ResilientPropagation(_network, TrainingData);
-            double[] resultsArray = new double[TrainingData.Count];
+            var trainer = new ResilientPropagation(_network, TrainingSet);
+            double[] resultsArray = new double[TrainingSet.Count];
             double[] errorArray = new double[NumberOfIterations];
             IsBusy = true;
             for (int iteration = 0; iteration < numberOfIterations; iteration++)
@@ -186,11 +188,18 @@ namespace MLPproject
                 Progress.Add(new Tuple<int,double>(iteration, trainer.Error));
             }
             IsBusy = false;
-            for(int i = 0; i < TrainingData.Count; i++)
+            for(int i = 0; i < TrainingSet.Count; i++)
             {
-               resultsArray[i] = _network.Classify(TrainingData[i].Input); 
+               resultsArray[i] = _network.Classify(TrainingSet[i].Input); 
             }
-            TrainingErrorValue = _network.CalculateError(TrainingData);
+            TrainingErrorValue = _network.CalculateError(TrainingSet);
+        }
+        public void Test()
+        {
+            if (ProblemType == AnalystGoal.Classification)
+                TestClassification();
+            else if(ProblemType == AnalystGoal.Regression)
+                TestRegression();
         }
         private BasicNetwork ConstructNetwork(int inputNeurons, int outputNeurons)
         {
