@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:MLPproject"
         xmlns:encog="clr-namespace:Encog.Util.Arrayutil;assembly=encog-core-cs"
         mc:Ignorable="d"
-        Title="MainWindow" Height="Auto" Width="Auto">
+        Title="MainWindow" Height="Auto" Width="1599" d:DesignHeight="571">
 
     <Window.DataContext>
         <local:MainWindowViewModel />
@@ -14,107 +14,156 @@
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <local:ANDConverter x:Key="AND" />
+        <local:StageConverter x:Key="StageConverter"/>
     </Window.Resources>
 
-    <Grid>
+    <Grid Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        
-        <Menu>
-            <MenuItem Header="New" />
-            <MenuItem Header="Load Training Set" Click="Load_Train_Click" />
-            <MenuItem Header="Train" Click="StartTraining_Click" />
-            <MenuItem Header="Load Testing Set" Click="Load_Test_Click"/>
-            <MenuItem Header="Test" Click="StartTesting_Click"/>
-        </Menu>
-        <Grid Grid.Row="1" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" >
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
 
-            <Grid x:Name="ParametersPanel" Margin="16">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                </Grid.RowDefinitions>
-                
-                <Label Content="Number of layers" />
-                <syncfusion:UpDown Value="{Binding NumberOfLayers}" MinValue="0" Grid.Column="1" />
-                <Label Content="Neurons per layer (including bias)" Grid.Row="1" />
-                <syncfusion:UpDown Value="{Binding NeuronsPerLayer}" MinValue="1" Grid.Column="1" Grid.Row="1" />
-                <Label Content="Bias" Grid.Row="2" />
-                <syncfusion:UpDown Value="{Binding Bias}" MinValue="0" MaxValue="1" Grid.Column="1" Grid.Row="2"/>
-                <Label Content="Number of iterations" Grid.Row="3" />
-                <syncfusion:UpDown Value="{Binding NumberOfIterations}" MinValue="1" Step="100" Grid.Column="1" Grid.Row="3"/>
-                <Label Content="Learning rate" Grid.Row="4" />
-                <syncfusion:UpDown Value="{Binding LearningRate}" Step="0.001"  MinValue="0.005"  Grid.Column="1" Grid.Row="4" NumberDecimalDigits="3"/>
-                <Label Content="Momentum" Grid.Row="5" />
-                <syncfusion:UpDown Value="{Binding Momentum}" Step="0.05" MinValue="0" Grid.Column="1" Grid.Row="5"/>
-                
-                <Label x:Name="TrainNameBlock"  Grid.Row="6" Content="{Binding TrainingDataFileName}" />
-                <!--<Button Grid.Row="6" Grid.Column="1" Content="Training Set" />-->
-                <Label x:Name="TestNameBlock"  Grid.Row="7" Content="{Binding TestingDataFileName}" />
-                <!--<Button Grid.Row="7" Grid.Column="1" Content="Training Set" />-->
-                <Label x:Name="OutputNameBlock"  Grid.Row="8" Content="Test Set" />
-                <!--<Button Grid.Row="8" Grid.Column="1" Content="Training Set" />-->
-                
-            </Grid>
-            <StackPanel Grid.Column="1" Margin="16">
-                <TextBlock Text="Task Type:" Margin="0,4"/>
-                <StackPanel Orientation="Horizontal">
-                    <RadioButton Content="Classification" GroupName="TaskType" Margin="16,0" x:Name="ClassificationRadio" Checked="ClassificationRadio_Checked"/>
-                    <RadioButton Content="Regression" GroupName="TaskType" Margin="16,0" x:Name="RegressionRadio" Checked="RegressionRadio_Checked"/>
-                </StackPanel>
-                
-                <TextBlock Text="Normalization Type:" Margin="0,4" 
-                           Visibility="{Binding IsChecked,Converter={StaticResource BooleanToVisibilityConverter}, ElementName=ClassificationRadio, Mode=TwoWay}" />
-                <ComboBox SelectedIndex="1" SelectedItem="{Binding NormalizationType, Mode=TwoWay}" 
+
+        <StackPanel>
+            <GroupBox Header="1. Define Problem">
+                <StackPanel>
+                    <TextBlock Text="Task Type:" Margin="0,4"/>
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton Content="Classification" GroupName="TaskType" Margin="16,0" x:Name="ClassificationRadio" Checked="ClassificationRadio_Checked"/>
+                        <RadioButton Content="Regression" GroupName="TaskType" Margin="16,0" x:Name="RegressionRadio" Checked="RegressionRadio_Checked"/>
+                    </StackPanel>
+                    <TextBlock Text="Normalization Type:" Margin="0,4" 
+                               Visibility="{Binding IsChecked,Converter={StaticResource BooleanToVisibilityConverter}, ElementName=ClassificationRadio, Mode=TwoWay}" />
+                    <ComboBox SelectedIndex="1" SelectedItem="{Binding NormalizationType, Mode=TwoWay}" 
                           ItemsSource="{Binding NormalizationTypes}" 
                           Visibility="{Binding IsChecked,Converter={StaticResource BooleanToVisibilityConverter}, ElementName=ClassificationRadio, Mode=TwoWay}" />
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="2. Load Training Set" IsEnabled="{Binding Stage, Converter={StaticResource StageConverter}, ConverterParameter=1}" >
+                <Button Content="LOAD TRAINING SET" Click="Load_Train_Click" Margin="120,0" />
+            </GroupBox>
+            <GroupBox Header="3. Adjust Network Parameters" IsEnabled="{Binding Stage, Converter={StaticResource StageConverter}, ConverterParameter=2}">
+                <Grid x:Name="ParametersPanel" Margin="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
-                <TextBlock Text="Activation Function:" Margin="0,8,0,4"/>
-                <ComboBox ItemsSource="{Binding ActivationFunctions}" SelectedItem="{Binding Function}" SelectedIndex="0"/>
-                
-                <TextBlock Text="Training Error:" Margin="0,4"/>
-                <TextBlock Text="{Binding TrainingErrorValue}" FontSize="21.333" FontWeight="Bold" />
+                    <Label Content="Activation Function:" />
+                    <ComboBox Grid.Column="1" SelectedIndex="0"
+                                  ItemsSource="{Binding ActivationFunctions}" SelectedItem="{Binding Function}" />
+                    <Label Content="Number of layers" Grid.Row="1" />
+                    <syncfusion:UpDown Value="{Binding NumberOfLayers}" MinValue="0" Grid.Row="1" Grid.Column="1" />
+                    <Label Content="Neurons per layer (including bias)" Grid.Row="2" />
+                    <syncfusion:UpDown Value="{Binding NeuronsPerLayer}" MinValue="1" Grid.Column="1" Grid.Row="2" />
+                    <Label Content="Bias" Grid.Row="3" />
+                    <syncfusion:UpDown Value="{Binding Bias}" MinValue="0" MaxValue="1" Grid.Column="1" Grid.Row="3"/>
+                    <Label Content="Number of iterations" Grid.Row="4" />
+                    <syncfusion:UpDown Value="{Binding NumberOfIterations}" MinValue="1" Step="100" Grid.Column="1" Grid.Row="4"/>
+                    <Label Content="Learning rate" Grid.Row="5" />
+                    <syncfusion:UpDown Value="{Binding LearningRate}" Step="0.001"  MinValue="0.005"  Grid.Column="1" Grid.Row="5" NumberDecimalDigits="3"/>
+                    <Label Content="Momentum" Grid.Row="6" />
+                    <syncfusion:UpDown Value="{Binding Momentum}" Step="0.05" MinValue="0" Grid.Column="1" Grid.Row="6"/>
 
-                <TextBlock Text="Testing Error:" Margin="0,4"/>
-                <TextBlock Text="{Binding TestingErrorValue}" FontSize="21.333" FontWeight="Bold"/>
-            </StackPanel>
-            <syncfusion:SfChart Margin="16" Grid.Row="1" Grid.ColumnSpan="2">
-                <syncfusion:LineSeries x:Name="FastColumnSeries" 
-                                            ItemsSource="{Binding Progress}" 
+                    <Label x:Name="TrainNameBlock"  Grid.Row="7" Content="{Binding TrainingDataFileName}" />
+                    <!--<Button Grid.Row="6" Grid.Column="1" Content="Training Set" />-->
+                    <Label x:Name="TestNameBlock"  Grid.Row="8" Content="{Binding TestingDataFileName}" />
+                    <!--<Button Grid.Row="7" Grid.Column="1" Content="Training Set" />-->
+                    <Label x:Name="OutputNameBlock"  Grid.Row="9" Content="Test Set" />
+                    <!--<Button Grid.Row="8" Grid.Column="1" Content="Training Set" />-->
+
+                </Grid>
+            </GroupBox>
+            <GroupBox Header="4. Train Network" IsEnabled="{Binding Stage, Converter={StaticResource StageConverter}, ConverterParameter=2}">
+                <Button Content="TRAIN" Click="Train_Click" Margin="120,0"/>
+            </GroupBox>
+            <GroupBox Header="5. Load Testing Set" IsEnabled="{Binding Stage, Converter={StaticResource StageConverter}, ConverterParameter=3}">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="LOAD TESTING SET" Click="Load_Test_Click" Margin="20,0" Width="150"/>
+                    <Button Content="TEST" Click="Test_Click" Margin="20,0" Width="150"/>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="6. Save Results" IsEnabled="{Binding Stage, Converter={StaticResource StageConverter}, ConverterParameter=4}">
+                <Button Content="SAVE RESULTS" Margin="20,0" Click="SaveResults_Click"/>
+            </GroupBox>
+        </StackPanel>
+
+
+        <StackPanel Grid.Column="1" Margin="16" Visibility="Collapsed">
+            <TextBlock Text="Training Error:" Margin="0,4"/>
+            <TextBlock Text="{Binding TrainingErrorValue}" FontSize="21.333" FontWeight="Bold" />
+
+            <TextBlock Text="Testing Error:" Margin="0,4"/>
+            <TextBlock Text="{Binding TestingErrorValue}" FontSize="21.333" FontWeight="Bold"/>
+        </StackPanel>
+        <syncfusion:SfChart Margin="16" Grid.Column="1">
+            <syncfusion:LineSeries x:Name="TrainingErrorPlot" 
+                                            ItemsSource="{Binding TrainingErrorData}" 
                                             XBindingPath="Item1" YBindingPath="Item2" 
                                             ShowTooltip="True"/>
-            </syncfusion:SfChart>
-            <syncfusion:SfChart Margin="16" Grid.Row="2" Grid.ColumnSpan="2"
-                                Visibility="{Binding IsChecked,Converter={StaticResource BooleanToVisibilityConverter}, ElementName=RegressionRadio, Mode=TwoWay}" >
-                <syncfusion:LineSeries 
-                                            ItemsSource="{Binding Progress}" 
+        </syncfusion:SfChart>
+        <syncfusion:SfChart Margin="16" Grid.Column="2" Palette="Elite"
+                             Visibility="{Binding IsChecked, Converter={StaticResource BooleanToVisibilityConverter}, ElementName=RegressionRadio, Mode=TwoWay}">
+            <syncfusion:LineSeries x:Name="IdealPlot"
+                                            ItemsSource="{Binding TestingIdealData}" 
                                             XBindingPath="Item1" YBindingPath="Item2" 
-                                            ShowTooltip="True"/>
-            </syncfusion:SfChart>
-            
-        </Grid>
+                                            ShowTooltip="True" StrokeThickness="8"/>
+            <syncfusion:LineSeries x:Name="ResultsPlot"
+                                            ItemsSource="{Binding TestingResultsData}" 
+                                            XBindingPath="Item1" YBindingPath="Item2" 
+                                            ShowTooltip="True" />
+        </syncfusion:SfChart>
+        <syncfusion:SfChart Margin="16" Grid.Column="2" Palette="Elite"  
+                            Visibility="{Binding IsChecked, Converter={StaticResource BooleanToVisibilityConverter}, ElementName=ClassificationRadio, Mode=TwoWay}">
+            <syncfusion:ScatterSeries x:Name="Class1Points"
+                                            ItemsSource="{Binding ClassPoints[0]}" 
+                                            ScatterHeight="5" ScatterWidth="5"
+                                            XBindingPath="Item1" YBindingPath="Item2" />
+            <syncfusion:ScatterSeries x:Name="Class2Points"
+                                            ItemsSource="{Binding ClassPoints[1]}" 
+                                            ScatterHeight="5" ScatterWidth="5"
+                                            XBindingPath="Item1" YBindingPath="Item2" />
+            <syncfusion:ScatterSeries x:Name="Class3Points"
+                                            ItemsSource="{Binding ClassPoints[2]}" 
+                                            ScatterHeight="5" ScatterWidth="5"
+                                            XBindingPath="Item1" YBindingPath="Item2" />
+            <syncfusion:ScatterSeries x:Name="Class4Points"
+                                            ItemsSource="{Binding ClassPoints[3]}" 
+                                            ScatterHeight="5" ScatterWidth="5"
+                                            XBindingPath="Item1" YBindingPath="Item2" />
+            <syncfusion:ScatterSeries x:Name="Class5Points"
+                                            ItemsSource="{Binding ClassPoints[4]}" 
+                                            ScatterHeight="5" ScatterWidth="5"
+                                            XBindingPath="Item1" YBindingPath="Item2" />
+            <syncfusion:ScatterSeries x:Name="Class6Points"
+                                            ItemsSource="{Binding ClassPoints[5]}" 
+                                            ScatterHeight="5" ScatterWidth="5"
+                                            XBindingPath="Item1" YBindingPath="Item2" />
+            <syncfusion:ScatterSeries x:Name="Class7Points"
+                                            ItemsSource="{Binding ClassPoints[6]}" 
+                                            ScatterHeight="5" ScatterWidth="5"
+                                            XBindingPath="Item1" YBindingPath="Item2" />
+            <syncfusion:ScatterSeries x:Name="Class8Points"
+                                            ItemsSource="{Binding ClassPoints[7]}" 
+                                            ScatterHeight="5" ScatterWidth="5"
+                                            XBindingPath="Item1" YBindingPath="Item2" />
+        </syncfusion:SfChart>
     </Grid>
 </Window>

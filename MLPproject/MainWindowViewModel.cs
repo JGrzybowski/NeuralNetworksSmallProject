@@ -27,7 +27,7 @@ using System.Threading.Tasks;
 
 namespace MLPproject
 {
-    public enum Stage { Start = 0, ProblemTypeSelected = 1, TrainingSetLoaded = 2, NetworkParamsSet = 3, TestingSetLoaded = 4 }
+    public enum Stage { Start = 0, ProblemTypeSelected = 1, TrainingSetLoaded = 2, Trained = 3, TestingSetLoaded = 4 }
     public class MainWindowViewModel : BindableBase
     {
         public MainWindowViewModel()
@@ -45,120 +45,152 @@ namespace MLPproject
         public Stage Stage { get { return stage; } set { SetProperty(ref stage, value); } }
         private Stage stage = Stage.Start;
 
-        #region Network
+        #region Network Parameters
         public int NeuronsPerLayer { get { return neuronsPerLayer; } set { SetProperty(ref neuronsPerLayer, value); } }
-            private int neuronsPerLayer = 3;
+        private int neuronsPerLayer = 3;
 
-            public int NumberOfLayers  { get { return numberOfLayers; } set { SetProperty(ref numberOfLayers, value); } }
-            private int numberOfLayers = 1;
+        public int NumberOfLayers  { get { return numberOfLayers; } set { SetProperty(ref numberOfLayers, value); } }
+        private int numberOfLayers = 1;
 
-            public double Bias { get { return bias; } set { SetProperty(ref bias, value); } }
-            private double bias = 1;
-            private bool HasBias { get { return(Bias != 0); } }
+        public double Bias { get { return bias; } set { SetProperty(ref bias, value); } }
+        private double bias = 1;
+        private bool HasBias { get { return(Bias != 0); } }
 
-            public int NumberOfIterations { get { return numberOfIterations; } set { SetProperty(ref numberOfIterations, value); } }
-            private int numberOfIterations = 100;
+        public int NumberOfIterations { get { return numberOfIterations; } set { SetProperty(ref numberOfIterations, value); } }
+        private int numberOfIterations = 100;
 
-            public List<NormalizationAction> NormalizationTypes;
-            public NormalizationAction NormalizationType { get { return normalizationType; } set { SetProperty(ref normalizationType, value); } }
-            private NormalizationAction normalizationType = NormalizationAction.OneOf;
+        public List<NormalizationAction> NormalizationTypes;
+        public NormalizationAction NormalizationType { get { return normalizationType; } set { SetProperty(ref normalizationType, value); } }
+        private NormalizationAction normalizationType = NormalizationAction.OneOf;
 
-            public List<IActivationFunction> ActivationFunctions { get { return new List<IActivationFunction> { new ActivationTANH(), new ActivationRamp() }; } }
-            public IActivationFunction Function { get { return function; } set { SetProperty(ref function, value); } }
-            private IActivationFunction function;
+        public List<IActivationFunction> ActivationFunctions { get { return new List<IActivationFunction> { new ActivationBiPolar() ,new ActivationTANH(), new ActivationRamp() }; } }
+        public IActivationFunction Function { get { return function; } set { SetProperty(ref function, value); } }
+        private IActivationFunction function;
         
-            public double LearningRate { get { return learningRate; } set { SetProperty(ref learningRate, value); } }
-            private double learningRate = 0.01;
+        public double LearningRate { get { return learningRate; } set { SetProperty(ref learningRate, value); } }
+        private double learningRate = 0.01;
 
-            public double Momentum { get { return momentum; } set { SetProperty(ref momentum, value); } }
-            private double momentum = 0.00;
+        public double Momentum { get { return momentum; } set { SetProperty(ref momentum, value); } }
+        private double momentum = 0.00;
 
-            private BasicNetwork _network;
-            #endregion
-            #region Data Loading 
+        private BasicNetwork _network;
+        #endregion
+        #region Data Loading 
 
-            public IMLDataSet TrainingSet
+        public IMLDataSet TrainingSet
+        {
+            get { return trainingData; }
+            set
             {
-                get { return trainingData; }
-                set
-                {
-                    SetProperty(ref trainingData, value);
-                    OnPropertyChanged(nameof(IsTrainingDataLoaded));
-                }
+                SetProperty(ref trainingData, value);
+                OnPropertyChanged(nameof(IsTrainingDataLoaded));
             }
-            private IMLDataSet trainingData;
-            public bool IsTrainingDataLoaded { get { return (TrainingSet != null); } }
+        }
+        private IMLDataSet trainingData;
+        public bool IsTrainingDataLoaded { get { return (TrainingSet != null); } }
 
-            public IMLDataSet TestingSet
+        public IMLDataSet TestingSet
+        {
+            get { return testingData; }
+            set
             {
-                get { return testingData; }
-                set
-                {
-                    SetProperty(ref testingData, value);
-                    OnPropertyChanged(nameof(IsTestingDataLoaded));
-                }
+                SetProperty(ref testingData, value);
+                OnPropertyChanged(nameof(IsTestingDataLoaded));
             }
-            private IMLDataSet testingData;
-            public bool IsTestingDataLoaded { get { return (TestingSet != null); } }
+        }
+        private IMLDataSet testingData;
+        public bool IsTestingDataLoaded { get { return (TestingSet != null); } }
         
-            #endregion
-            #region Visibility
+        #endregion
+        #region Visibility
 
-            private bool isBusy = false;
-            public bool IsBusy { get { return isBusy; } set { SetProperty(ref isBusy, value); } }
-            public bool IsIdle { get { return !IsBusy; } }
+        private bool isBusy = false;
+        public bool IsBusy { get { return isBusy; } set { SetProperty(ref isBusy, value); } }
+        public bool IsIdle { get { return !IsBusy; } }
 
-            public string TestingSetFileName { get { return testingDataFileName; } set { SetProperty(ref testingDataFileName, value); } }
-            private string testingDataFileName;
-            public string TrainingSetFileName { get { return trainingDataFileName; } set { SetProperty(ref trainingDataFileName, value); } }
-            private string trainingDataFileName;
-            #endregion
+        public string TestingSetFileName { get { return testingDataFileName; } set { SetProperty(ref testingDataFileName, value); } }
+        private string testingDataFileName;
+        public string TrainingSetFileName { get { return trainingDataFileName; } set { SetProperty(ref trainingDataFileName, value); } }
+        private string trainingDataFileName;
+        #endregion
         #region Error data
-        public ObservableCollection<Tuple<int,double>> Progress { get { return progress; } set { SetProperty(ref progress, value); } }
-            private ObservableCollection<Tuple<int,double>> progress = new ObservableCollection<Tuple<int, double>>();
+        public ObservableCollection<Tuple<int,double>> TrainingErrorData { get { return trainingErrorData; } set { SetProperty(ref trainingErrorData, value); } }
+        private ObservableCollection<Tuple<int,double>> trainingErrorData = new ObservableCollection<Tuple<int, double>>();
 
-            public double TrainingErrorValue { get { return trainingErrorValue; } set { SetProperty(ref trainingErrorValue, value); } }
-            private double trainingErrorValue;
-            public double TestingErrorValue { get { return testingErrorValue; } set { SetProperty(ref testingErrorValue, value); } }
-            private double testingErrorValue;
+        public ObservableCollection<Tuple<double, double>> TestingIdealData { get { return testingIdealData; } set { SetProperty(ref testingIdealData, value); } }
+        private ObservableCollection<Tuple<double, double>> testingIdealData = new ObservableCollection<Tuple<double, double>>();
+
+        public ObservableCollection<Tuple<double, double>> TestingResultsData { get { return testingResultsData; } set { SetProperty(ref testingResultsData, value); } }
+        private ObservableCollection<Tuple<double, double>> testingResultsData = new ObservableCollection<Tuple<double, double>>();
+
+        public List<ObservableCollection<Tuple<double, double>>> ClassPoints { get { return classPoints; } set { SetProperty(ref classPoints, value); } }
+        private List<ObservableCollection<Tuple<double, double>>> classPoints = new List<ObservableCollection<Tuple<double, double>>>()
+        {
+             new ObservableCollection<Tuple<double, double>>(),
+             new ObservableCollection<Tuple<double, double>>(),
+             new ObservableCollection<Tuple<double, double>>(),
+             new ObservableCollection<Tuple<double, double>>(),
+             new ObservableCollection<Tuple<double, double>>(),
+             new ObservableCollection<Tuple<double, double>>(),
+             new ObservableCollection<Tuple<double, double>>(),
+             new ObservableCollection<Tuple<double, double>>(),
+        };
+
+        private void ClearClassPoints()
+        {
+            foreach (var Class in ClassPoints)
+            {
+                Class.Clear();
+            }
+        }
+
+
+        public double TrainingErrorValue { get { return trainingErrorValue; } set { SetProperty(ref trainingErrorValue, value); } }
+        private double trainingErrorValue;
+        public double TestingErrorValue { get { return testingErrorValue; } set { SetProperty(ref testingErrorValue, value); } }
+        private double testingErrorValue;
         #endregion
         #endregion
-
         #region Classification
         public void TestClassification()
         {
+            ClearClassPoints();
             TestingErrorValue = _network.CalculateError(TestingSet);
-            var results = new List<double[]>();
-            //FIX magic number
-            var eq = new Equilateral(3, 1, -1);
-            foreach (var singleResult in TestingSet)
+
+            var eq = new Equilateral(TrainingSet.InputSize+1, 1, -1);
+            foreach (var item in TrainingSet)
             {
-                var input = new double[TestingSet.InputSize+1];
-                for (int i = 0; i < TestingSet.InputSize; i++)
-                    input[i] = singleResult.Input[i];
-                input[TestingSet.InputSize] = eq.Decode(singleResult.Ideal);
-                results.Add(input);
+                ClassPoints[_network.Classify(item.Input)].Add(new Tuple<double,double>(item.Input[0], item.Input[1]));
             }
-            CSVHelper.SaveToCSV(results, new FileInfo("temp/results.csv"));
+
+
+
+            //var results = new List<double[]>();
+            ////FIX magic number
+            //foreach (var singleResult in TestingSet)
+            //{
+            //    var input = new double[TestingSet.InputSize+1];
+            //    for (int i = 0; i < TestingSet.InputSize; i++)
+            //        input[i] = singleResult.Input[i];
+            //    input[TestingSet.InputSize] = eq.Decode(singleResult.Ideal);
+            //    results.Add(input);
+            //}
         }
         #endregion
         #region Regresssion
         public void TestRegression()
         {
+            TestingIdealData.Clear();
+            TestingResultsData.Clear();
             TestingErrorValue = _network.CalculateError(TestingSet);
-            var results = new List<double[]>();
-            foreach (var singleResult in TestingSet)
+
+            foreach (var item in TestingSet)
             {
-                var input = new double[TestingSet.InputSize + 2];
-                for (int i = 0; i < TestingSet.InputSize; i++)
-                    input[i] = singleResult.Input[i];
-                //FIX MagicNumber 0
-                input[TestingSet.InputSize] = singleResult.Ideal[0];
-                input[TestingSet.InputSize + 1] = _network.Compute(singleResult.Input)[0];
-                results.Add(input);
+                TestingIdealData.Add(new Tuple<double, double>(item.Input[0], item.Ideal[0]));
+                TestingResultsData.Add(new Tuple<double,double>(item.Input[0], _network.Compute(item.Input)[0]));
             }
+
             TestingErrorValue = _network.CalculateError(TestingSet);
-            CSVHelper.SaveToCSV(results, new FileInfo("temp/regressionResults.csv"));
         }
         #endregion
 
@@ -166,18 +198,22 @@ namespace MLPproject
         {
             TrainingSet = CSVHelper.LoadAndNormalizeData(fileInfo, ProblemType, this.NormalizationType, true);
             TrainingSetFileName = fileInfo.Name;
+            Stage = Stage.TrainingSetLoaded;
         }
         public void LoadTestingSet(FileInfo fileInfo)
         {
             TestingSet = CSVHelper.LoadAndNormalizeData(fileInfo, ProblemType, this.NormalizationType, false);
             TestingSetFileName = fileInfo.Name;
+            Stage = Stage.TestingSetLoaded;
         }
         public void Train()
         {
-            Progress.Clear();
+            TrainingErrorData.Clear();
+            TestingIdealData.Clear();
+            TestingResultsData.Clear();
             _network = ConstructNetwork(TrainingSet.InputSize,TrainingSet.IdealSize);
 
-            //var trainer = new Backpropagation(_network, TrainingData, LearningRate, Momentum);
+            //var trainer = new Backpropagation(_network, TrainingSet, LearningRate, Momentum);
             var trainer = new ResilientPropagation(_network, TrainingSet);
             double[] resultsArray = new double[TrainingSet.Count];
             double[] errorArray = new double[NumberOfIterations];
@@ -185,7 +221,7 @@ namespace MLPproject
             for (int iteration = 0; iteration < numberOfIterations; iteration++)
             {
                 trainer.Iteration();
-                Progress.Add(new Tuple<int,double>(iteration, trainer.Error));
+                TrainingErrorData.Add(new Tuple<int,double>(iteration, trainer.Error));
             }
             IsBusy = false;
             for(int i = 0; i < TrainingSet.Count; i++)
@@ -193,6 +229,7 @@ namespace MLPproject
                resultsArray[i] = _network.Classify(TrainingSet[i].Input); 
             }
             TrainingErrorValue = _network.CalculateError(TrainingSet);
+            Stage = Stage.Trained;
         }
         public void Test()
         {

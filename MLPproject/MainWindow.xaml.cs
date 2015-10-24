@@ -56,13 +56,9 @@ namespace MLPproject
             }
         }
 
-        private void StartTraining_Click(object sender, RoutedEventArgs e)
+        private void Train_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.Train();
-        }
-        private void StartTesting_Click(object sender, RoutedEventArgs e)
-        {
-            ViewModel.Test();
         }
 
         private void ClassificationRadio_Checked(object sender, RoutedEventArgs e)
@@ -74,5 +70,14 @@ namespace MLPproject
             ViewModel.ProblemType = AnalystGoal.Regression;
         }
 
+        private void SaveResults_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void Test_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.Test();
+        }
     }
 }
