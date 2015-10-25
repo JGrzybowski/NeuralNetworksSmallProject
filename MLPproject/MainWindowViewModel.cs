@@ -63,7 +63,7 @@ namespace MLPproject
         public NormalizationAction NormalizationType { get { return normalizationType; } set { SetProperty(ref normalizationType, value); } }
         private NormalizationAction normalizationType = NormalizationAction.OneOf;
 
-        public List<IActivationFunction> ActivationFunctions { get { return new List<IActivationFunction> { new ActivationBiPolar() ,new ActivationTANH(), new ActivationRamp() }; } }
+        public List<IActivationFunction> ActivationFunctions { get { return new List<IActivationFunction> {new ActivationTANH(), new ActivationLOG(), new ActivationLinear() }; } }
         public IActivationFunction Function { get { return function; } set { SetProperty(ref function, value); } }
         private IActivationFunction function;
         
@@ -157,24 +157,18 @@ namespace MLPproject
             ClearClassPoints();
             TestingErrorValue = _network.CalculateError(TestingSet);
 
-            var eq = new Equilateral(TrainingSet.InputSize+1, 1, -1);
+            var eq = new Equilateral(TrainingSet.IdealSize+1, 1, -1);
             foreach (var item in TrainingSet)
             {
-                ClassPoints[_network.Classify(item.Input)].Add(new Tuple<double,double>(item.Input[0], item.Input[1]));
+                if (NormalizationType == NormalizationAction.OneOf)
+                    ClassPoints[_network.Classify(item.Input)].Add(new Tuple<double, double>(item.Input[0], item.Input[1]));
+                else
+                {
+                    var computedClass = new double[TrainingSet.IdealSize];
+                    _network.Compute(item.Input).CopyTo(computedClass, 0, TrainingSet.IdealSize);
+                    ClassPoints[eq.GetSmallestDistance(computedClass)].Add(new Tuple<double, double>(item.Input[0], item.Input[1]));
+                }
             }
-
-
-
-            //var results = new List<double[]>();
-            ////FIX magic number
-            //foreach (var singleResult in TestingSet)
-            //{
-            //    var input = new double[TestingSet.InputSize+1];
-            //    for (int i = 0; i < TestingSet.InputSize; i++)
-            //        input[i] = singleResult.Input[i];
-            //    input[TestingSet.InputSize] = eq.Decode(singleResult.Ideal);
-            //    results.Add(input);
-            //}
         }
         #endregion
         #region Regresssion

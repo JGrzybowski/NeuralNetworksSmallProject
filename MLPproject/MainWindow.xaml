@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:MLPproject"
         xmlns:encog="clr-namespace:Encog.Util.Arrayutil;assembly=encog-core-cs"
         mc:Ignorable="d"
-        Title="MainWindow" Height="Auto" Width="1599" d:DesignHeight="571">
+        Title="MainWindow" Height="Auto" Width="1600" d:DesignHeight="750">
 
     <Window.DataContext>
         <local:MainWindowViewModel />
@@ -19,8 +19,8 @@
 
     <Grid Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*" />
+            <RowDefinition Height="550"/>
+            <RowDefinition Height="150" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
@@ -82,12 +82,8 @@
                     <Label Content="Momentum" Grid.Row="6" />
                     <syncfusion:UpDown Value="{Binding Momentum}" Step="0.05" MinValue="0" Grid.Column="1" Grid.Row="6"/>
 
-                    <Label x:Name="TrainNameBlock"  Grid.Row="7" Content="{Binding TrainingDataFileName}" />
-                    <!--<Button Grid.Row="6" Grid.Column="1" Content="Training Set" />-->
-                    <Label x:Name="TestNameBlock"  Grid.Row="8" Content="{Binding TestingDataFileName}" />
-                    <!--<Button Grid.Row="7" Grid.Column="1" Content="Training Set" />-->
-                    <Label x:Name="OutputNameBlock"  Grid.Row="9" Content="Test Set" />
-                    <!--<Button Grid.Row="8" Grid.Column="1" Content="Training Set" />-->
+                    <TextBlock x:Name="TrainNameBlock"  Grid.Row="7" Text="{Binding TrainingSetFileName}" Grid.ColumnSpan="2" TextAlignment="Center" />
+                    <TextBlock x:Name="TestNameBlock"  Grid.Row="8" Text="{Binding TestingSetFileName}" Grid.ColumnSpan="2" TextAlignment="Center" />
 
                 </Grid>
             </GroupBox>
@@ -100,19 +96,21 @@
                     <Button Content="TEST" Click="Test_Click" Margin="20,0" Width="150"/>
                 </StackPanel>
             </GroupBox>
-            <GroupBox Header="6. Save Results" IsEnabled="{Binding Stage, Converter={StaticResource StageConverter}, ConverterParameter=4}">
+            <GroupBox Header="6. Save Results" Visibility="Collapsed"
+                      IsEnabled="{Binding Stage, Converter={StaticResource StageConverter}, ConverterParameter=4}">
                 <Button Content="SAVE RESULTS" Margin="20,0" Click="SaveResults_Click"/>
             </GroupBox>
         </StackPanel>
 
 
-        <StackPanel Grid.Column="1" Margin="16" Visibility="Collapsed">
+        <StackPanel Grid.Row="1">
             <TextBlock Text="Training Error:" Margin="0,4"/>
             <TextBlock Text="{Binding TrainingErrorValue}" FontSize="21.333" FontWeight="Bold" />
 
             <TextBlock Text="Testing Error:" Margin="0,4"/>
             <TextBlock Text="{Binding TestingErrorValue}" FontSize="21.333" FontWeight="Bold"/>
         </StackPanel>
+        
         <syncfusion:SfChart Margin="16" Grid.Column="1">
             <syncfusion:LineSeries x:Name="TrainingErrorPlot" 
                                             ItemsSource="{Binding TrainingErrorData}" 
